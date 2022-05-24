@@ -1,0 +1,16 @@
+{
+  "Version": 1,
+  "ProjectMap": {
+    "3b0da61d-81a5-4a2a-913b-cfe35c15db5b": {
+      "ProjectGuid": "3b0da61d-81a5-4a2a-913b-cfe35c15db5b",
+      "DisplayName": "StarCeiling",
+      "ColorIndex": 0
+    },
+    "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3": {
+      "ProjectGuid": "a2fe74e1-b743-11d0-ae1a-00a0c90fffc3",
+      "DisplayName": "Miscellaneous Files",
+      "ColorIndex": -1
+    }
+  },
+  "NextColorIndex": 1
+}
