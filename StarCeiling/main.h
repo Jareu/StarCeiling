@@ -6,12 +6,16 @@
 #pragma warning(pop)
 #undef main
 
+#include "types.h"
+
 int main();
 void handleEvents();
 void update();
 void render();
 
-SDL_Texture* draw_stars();
+bool screencoordsInBounds(Vector2 screen_coords, float Z);
+inline Vector2 getScreenCoords(const float scalar, const Vector2& coords_n);
+SDL_Texture* drawStars();
 void ReadCSV(std::string filename, bool has_header = true);
 
 static inline std::string& ltrim(std::string& s) {

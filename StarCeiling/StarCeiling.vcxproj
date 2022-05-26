@@ -160,7 +160,6 @@
     <ClCompile Include="Star.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="AVLTree.h" />
     <ClInclude Include="graphics.h" />
     <ClInclude Include="main.h" />
     <ClInclude Include="Star.h" />
