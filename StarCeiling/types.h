@@ -56,3 +56,9 @@ public:
 		return sum;
 	}
 };
+
+struct HSL {
+	float H = 0;
+	float S = 0;
+	float L = 0;
+};
