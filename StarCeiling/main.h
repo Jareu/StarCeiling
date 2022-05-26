@@ -13,6 +13,7 @@ void handleEvents();
 void update();
 void render();
 
+void addStarsToConstellation(std::vector<std::pair<int, int>>& constellation, const int star_a, const int star_b);
 bool screencoordsInBounds(Vector2 screen_coords, float Z);
 inline Vector2 getScreenCoords(const float scalar, const Vector2& coords_n);
 SDL_Texture* drawStars();

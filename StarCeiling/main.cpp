@@ -54,8 +54,8 @@ int main() {
 
 	// Add southern cross (Crux)
 	auto crux = std::vector<std::pair<int, int>>();
-	crux.push_back(std::pair<int, int>(60530, 60893)); // Add Alpha Crux and Gamma Crux
-	crux.push_back(std::pair<int, int>(62239, 59565)); // Add Beta Crux and Delta Crux
+	addStarsToConstellation(crux, 60530, 60893); // Add Alpha Crux and Gamma Crux
+	addStarsToConstellation(crux, 62239, 59565); // Add Beta Crux and Delta Crux
 	constellations.push_back(crux);
 
 	int flags = 0;
@@ -134,6 +134,9 @@ void increment_time(const float delta_seconds) {
 	earth_rotation = fmod(earth_rotation + _2PI * delta_seconds / SECONDS_IN_A_DAY, _2PI);
 }
 
+void addStarsToConstellation(std::vector<std::pair<int, int>>& constellation, const int star_a, const int star_b) {
+	constellation.push_back(std::pair<int, int>(star_a, star_b));
+}
 
 Vector3 Rotate_X(const Vector3& v, float angle) {
 	float cosa = cos(angle);
