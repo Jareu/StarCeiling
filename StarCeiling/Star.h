@@ -1,10 +1,12 @@
 #pragma once
 
-#include "types.h"
 #include <string>
 #include <algorithm>
 #define _USE_MATH_DEFINES
 #include <math.h>
+
+#include "types.h"
+#include "graphics.h"
 
 class Star
 {
@@ -14,17 +16,11 @@ public:
 	const float MAX_MAGNITUDE = -1.5f;
 	const float MIN_MAGNITUDE = 7.f;
 	const float DEFAULT_MAGNITUDE = MIN_MAGNITUDE;
-	const float DEFAULT_B_V = 0.58;
+	const float DEFAULT_B_V = 0.58f;
 	static const int MIN_TEMP = 1000; // kelvin
 	static const int MAX_TEMP = 40000; // kelvin
 	static const uint8_t MIN_BRIGHTNESS = 0;
 	static const uint8_t MAX_BRIGHTNESS = 255;
-
-	struct StarColour {
-		uint8_t R = 0;
-		uint8_t G = 0;
-		uint8_t B = 0;
-	};
 
 private:
 	int id_ = 0;
@@ -40,18 +36,15 @@ private:
 	VectorSpherical spherical_ = VectorSpherical(0.f, 0.f); // theta, phi
 	VectorSpherical spherical_n_ = VectorSpherical(0.f, 0.f); // theta, phi - normalized
 	Vector2 screen_coords_ = Vector2(0.f, 0.f); // X, Y, normalized
-	StarColour colour_ = { 0,0,0 };
+	RGB colour_ = { 0,0,0 };
 	unsigned int temp_ = 0;
 
 	inline void NormalizeAbsoluteLocation() {
-		double r = sqrt(location_absolute_.x*location_absolute_.x + location_absolute_.y*location_absolute_.y + location_absolute_.z*location_absolute_.z);
+		float r = static_cast<float>(sqrt(location_absolute_.x*location_absolute_.x + location_absolute_.y*location_absolute_.y + location_absolute_.z*location_absolute_.z));
 		location_absolute_.x /= r;
 		location_absolute_.y /= r;
 		location_absolute_.z /= r;
 	}
-
-	HSL rgb_to_hsl(const StarColour rgb);
-	StarColour hsl_to_rgb(const HSL hsl);
 
 	inline void SetBrightness() {
 		float brightness_n = (1.f - magnitude_ / (MIN_MAGNITUDE - MAX_MAGNITUDE));
@@ -170,7 +163,7 @@ public:
 		return colour_index_;
 	}
 
-	inline StarColour GetColour() const {
+	inline RGB GetColour() const {
 		return colour_;
 	}
 
@@ -179,7 +172,7 @@ public:
 	// calculate normalized screen coords from spherical coords
 	inline void CalculateScreenCoords() {
 		float r = spherical_n_.theta;
-		screen_coords_ = Vector2(r * cos(spherical_.phi), r * sin(spherical_.phi));
+		screen_coords_ = Vector2(r * static_cast<float>(cos(spherical_.phi)), r * static_cast<float>(sin(spherical_.phi)));
 	}
 
 	inline void UpdateTransforms() {
@@ -252,9 +245,9 @@ public:
 	}
 
 	static inline unsigned int ColourIndexToTemperature(const float B_V) {
-		return (5601 / pow(B_V + 0.4, 2.f / 3.f));
+		return static_cast<unsigned int>(5601 / pow(B_V + 0.4, 2.f / 3.f));
 	}
 
-	static StarColour TemperatureToColour(unsigned int temp);
+	static RGB TemperatureToColour(unsigned int temp);
 };
 

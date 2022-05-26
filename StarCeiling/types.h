@@ -4,7 +4,7 @@
 #include <math.h>
 
 static const float ZERO_TOLERANCE = 0.0000001f;
-static const float _2PI = M_PI * 2;
+static const float _2PI = static_cast<float>(M_PI) * 2.f;
 
 static inline bool fequals_zero(const float& f) {
 	return (fabs(f) < ZERO_TOLERANCE);
@@ -20,8 +20,9 @@ public:
 	Vector2(float x, float y) : x{ x }, y{ y } {};
 
 	Vector2& operator+(const Vector2& other) {
-		Vector2 sum = Vector2(this->x + other.x, this->y + other.y);
-		return sum;
+		this->x += other.x;
+		this->y += other.y;
+		return *this;
 	}
 };
 
@@ -55,10 +56,4 @@ public:
 		Vector3 sum = Vector3(this->x + other.x, this->y + other.y, this->z + other.z);
 		return sum;
 	}
-};
-
-struct HSL {
-	float H = 0;
-	float S = 0;
-	float L = 0;
 };

@@ -1,19 +1,4 @@
-﻿  main.cpp
-C:\Users\Jamie\source\repos\StarCeiling\StarCeiling\types.h(7,35): warning C4305: 'initializing': truncation from 'double' to 'float'
-C:\Users\Jamie\source\repos\StarCeiling\StarCeiling\Star.h(17,26): warning C4305: 'initializing': truncation from 'double' to 'const float'
-C:\Users\Jamie\source\repos\StarCeiling\StarCeiling\Star.h(54,27): warning C4244: '/=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Jamie\source\repos\StarCeiling\StarCeiling\Star.h(55,27): warning C4244: '/=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Jamie\source\repos\StarCeiling\StarCeiling\Star.h(56,27): warning C4244: '/=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Jamie\source\repos\StarCeiling\StarCeiling\Star.h(274,45): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Jamie\source\repos\StarCeiling\StarCeiling\Star.h(397,16): warning C4244: 'return': conversion from 'double' to 'unsigned int', possible loss of data
-C:\Users\Jamie\source\repos\StarCeiling\StarCeiling\main.cpp(43,18): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-C:\Users\Jamie\source\repos\StarCeiling\StarCeiling\main.cpp(48,24): warning C4305: 'argument': truncation from 'double' to 'float'
-C:\Users\Jamie\source\repos\StarCeiling\StarCeiling\main.cpp(244,8): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Jamie\source\repos\StarCeiling\StarCeiling\main.cpp(243,8): warning C4244: 'argument': conversion from 'const float' to 'int', possible loss of data
-C:\Users\Jamie\source\repos\StarCeiling\StarCeiling\main.cpp(242,8): warning C4244: 'argument': conversion from 'float' to 'int', possible loss of data
-C:\Users\Jamie\source\repos\StarCeiling\StarCeiling\main.cpp(241,10): warning C4244: 'argument': conversion from 'const float' to 'int', possible loss of data
-C:\Users\Jamie\source\repos\StarCeiling\StarCeiling\main.cpp(263,25): warning C4244: '=': conversion from 'float' to 'unsigned int', possible loss of data
-C:\Users\Jamie\source\repos\StarCeiling\StarCeiling\main.cpp(386,78): warning C4244: 'argument': conversion from 'const float' to 'int', possible loss of data
-C:\Users\Jamie\source\repos\StarCeiling\StarCeiling\main.cpp(386,61): warning C4244: 'argument': conversion from 'const float' to 'int', possible loss of data
-C:\Users\Jamie\source\repos\StarCeiling\StarCeiling\types.h(24): warning C4172: returning address of local variable or temporary: sum
+﻿  Star.cpp
+  main.cpp
+  Generating Code...
   StarCeiling.vcxproj -> C:\Users\Jamie\source\repos\StarCeiling\x64\Debug\StarCeiling.exe

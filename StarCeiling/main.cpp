@@ -40,12 +40,12 @@ SDL_Texture* star_tex;
 SDL_Rect star_rect;
 
 void setLatitude(float degrees) {
-	latitude = M_PI * (0.5f - degrees / 180);
+	latitude = static_cast<float>(M_PI * (0.5f - degrees / 180));
 }
 
 int main() {
 
-	setLatitude(-34.814712);
+	setLatitude(-34.814712f);
 
 	int flags = 0;
 	flags = SDL_WINDOW_RESIZABLE;
@@ -226,9 +226,9 @@ void handleEvents() {
 	}
 }
 
-bool renderLine( const Vector2 start, const Vector2 end, const Star::StarColour& color)
+bool renderLine( const Vector2 start, const Vector2 end, const RGB& color)
 {
-	Star::StarColour oldc;
+	RGB oldc;
 
 	int ww, wh;
 	SDL_GetWindowSize(Environment::window,
@@ -238,10 +238,10 @@ bool renderLine( const Vector2 start, const Vector2 end, const Star::StarColour&
 	//---
 	int ret = SDL_RenderDrawLine(
 				Environment::renderer, // SDL_Renderer* renderer: the renderer in which draw
-				start.x,               // int x1: x of the starting point
-				wh - start.y,          // int y1: y of the starting point
-				end.x,                 // int x2: x of the end point
-				wh - end.y);           // int y2: y of the end point
+				static_cast<int>(round(start.x)),               // int x1: x of the starting point
+				wh - static_cast<int>(round(start.y)),          // int y1: y of the starting point
+				static_cast<int>(round(end.x)),                 // int x2: x of the end point
+				wh - static_cast<int>(round(end.y)));           // int y2: y of the end point
 
 	if (ret != 0)
 	{
@@ -256,11 +256,11 @@ bool renderLine( const Vector2 start, const Vector2 end, const Star::StarColour&
 	return true;
 }
 
-void renderCircle(const Vector2 center, float radius, const Star::StarColour& color, unsigned int sides)
+void renderCircle(const Vector2 center, float radius, const RGB& color, unsigned int sides)
 {
 	if (sides == 0)
 	{
-		sides = _2PI * radius / 2;
+		sides = static_cast<unsigned int>(round(_2PI * radius / 2));
 	}
 
 	float d_a = _2PI / sides,
@@ -383,7 +383,7 @@ SDL_Texture* draw_stars() {
 				renderCircle(screen_coord, 0.75f, star.GetColour(), 4);
 			}
 			else {*/
-				SDL_RenderDrawPoint(Environment::renderer, screen_coords.x, screen_coords.y);
+				SDL_RenderDrawPoint(Environment::renderer, static_cast<int>(round(screen_coords.x)), static_cast<int>(round(screen_coords.y)));
 			//}
 		}
 	}
