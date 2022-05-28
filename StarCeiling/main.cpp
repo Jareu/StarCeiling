@@ -10,6 +10,8 @@
 #include <sstream>
 #include <filesystem>
 #include <chrono>
+#include <map>
+#include <utility>
 
 #include "main.h"
 #include "Star.h"
@@ -34,8 +36,10 @@ const float SECONDS_IN_A_DAY = 86400.f; // (86400 seconds = 1 day)
 float earth_rotation = 0.f; // rotation of earth in radians
 float latitude = 0.f; // latitude in radians, negative is south. 
 const float EARTH_ROTATION_RATE = 20.f;
+const RGB constellation_colour = RGB{255, 255, 255};
 
-std::vector<std::unique_ptr<Star>> sky;
+std::map<int, std::unique_ptr<Star>> sky;
+std::vector<std::vector<std::pair<int, int>>> constellations;
 SDL_Texture* star_tex;
 SDL_Rect star_rect;
 
@@ -45,7 +49,14 @@ void setLatitude(float degrees) {
 
 int main() {
 
+	// set latitude of Adelaide
 	setLatitude(-34.814712f);
+
+	// Add southern cross (Crux)
+	auto crux = std::vector<std::pair<int, int>>();
+	addStarsToConstellation(crux, 60530, 60893); // Add Alpha Crux and Gamma Crux
+	addStarsToConstellation(crux, 62239, 59565); // Add Beta Crux and Delta Crux
+	constellations.push_back(crux);
 
 	int flags = 0;
 	flags = SDL_WINDOW_RESIZABLE;
@@ -75,11 +86,12 @@ int main() {
 		}
 
 		// load stars
-		ReadCSV("star_data.csv", true);
+		// ReadCSV("star_data.csv", true);
+		ReadCSV("star_data_large.csv", true);
 
 		// create star texture
 		uint64_t t_before = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-		star_tex = draw_stars();
+		star_tex = drawStars();
 		uint64_t t_after = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
 		uint64_t search_time = (t_after - t_before);
 		std::cout << "Star draw time: " << search_time << " microseconds \n";
@@ -123,6 +135,9 @@ void increment_time(const float delta_seconds) {
 	earth_rotation = fmod(earth_rotation + _2PI * delta_seconds / SECONDS_IN_A_DAY, _2PI);
 }
 
+void addStarsToConstellation(std::vector<std::pair<int, int>>& constellation, const int star_a, const int star_b) {
+	constellation.push_back(std::pair<int, int>(star_a, star_b));
+}
 
 Vector3 Rotate_X(const Vector3& v, float angle) {
 	float cosa = cos(angle);
@@ -159,7 +174,12 @@ void update() {
 	// do things
 	increment_time(EARTH_ROTATION_RATE);
 
-	for (auto& star : sky) {
+	auto sky_it = sky.begin();
+	while (sky_it != sky.end())
+	{
+		// get value from star
+		auto& star = sky_it->second;
+
 		if (star) {
 			// rotate around Y axis by time of day, then rotate about X axis by latitude
 			Vector3 new_loc = star->GetWorldLocation();
@@ -167,6 +187,8 @@ void update() {
 			star->Rotate_X(latitude);
 			star->UpdateTransforms();
 		}
+
+		sky_it++;
 	}
 
 	bStarsChanged = true;
@@ -176,7 +198,7 @@ void update() {
 void render() {
 	SDL_SetRenderDrawColor(Environment::renderer, 0, 0, 0, 255);
 	SDL_RenderClear(Environment::renderer);
-	star_tex = draw_stars();
+	star_tex = drawStars();
 	SDL_SetRenderTarget(Environment::renderer, NULL);
 	SDL_RenderCopy(Environment::renderer, star_tex, NULL, &star_rect);
 	SDL_RenderPresent(Environment::renderer);
@@ -191,6 +213,16 @@ void handleEvents() {
 	switch (event.type) {
 	case SDL_QUIT:
 		bIsRunning = false;
+		break;
+	case SDL_MOUSEWHEEL:
+		if (event.wheel.y < 0) {
+			// zoom in
+
+		}
+		else if (event.wheel.y > 0) {
+			// zoom out
+
+		}
 		break;
 	default:
 		break;
@@ -239,9 +271,9 @@ bool renderLine( const Vector2 start, const Vector2 end, const RGB& color)
 	int ret = SDL_RenderDrawLine(
 				Environment::renderer, // SDL_Renderer* renderer: the renderer in which draw
 				static_cast<int>(round(start.x)),               // int x1: x of the starting point
-				wh - static_cast<int>(round(start.y)),          // int y1: y of the starting point
+				static_cast<int>(round(start.y)),          // int y1: y of the starting point
 				static_cast<int>(round(end.x)),                 // int x2: x of the end point
-				wh - static_cast<int>(round(end.y)));           // int y2: y of the end point
+				static_cast<int>(round(end.y)));           // int y2: y of the end point
 
 	if (ret != 0)
 	{
@@ -320,8 +352,6 @@ void ReadCSV(std::string filename, bool has_header) {
 		}
 
 		while (getline(str, word, ',')) {
-
-
 			row.push_back(word);
 		}
 
@@ -339,7 +369,9 @@ void ReadCSV(std::string filename, bool has_header) {
 		star->SetLocation(Vector3{ x, y, z });
 
 		// move star into sky
-		sky.push_back(std::move(star));
+		if (star->GetMagnitude() < Star::MIN_MAGNITUDE) {
+			sky.insert(std::pair<int, std::unique_ptr<Star>>(star->GetID(), std::move(star)));
+		}
 	}
 
 	file.close();
@@ -347,7 +379,18 @@ void ReadCSV(std::string filename, bool has_header) {
 	std::cout << "Successfully read " << sky.size() << " stars.\n";
 }
 
-SDL_Texture* draw_stars() {
+Vector2 getScreenCoords(const float scalar, const Vector2& coords_n) {
+	return Vector2(scalar * coords_n.x + WINDOW_WIDTH_HALF, scalar * coords_n.y + WINDOW_HEIGHT_HALF);
+}
+
+bool screencoordsInBounds(Vector2 screen_coords, float Z) {
+	bool x_in_bounds = screen_coords.x > 0 && screen_coords.x < WINDOW_WIDTH;
+	bool y_in_bounds = screen_coords.y > 0 && screen_coords.y < WINDOW_HEIGHT;
+	bool z_in_bounds = Z > 0.f;
+	return (x_in_bounds && y_in_bounds && z_in_bounds);
+}
+
+SDL_Texture* drawStars() {
 	SDL_Texture* texture = SDL_CreateTexture(Environment::renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, WINDOW_WIDTH, WINDOW_HEIGHT);
 
 	// draw to the texture
@@ -357,34 +400,62 @@ SDL_Texture* draw_stars() {
 	SDL_SetRenderDrawColor(Environment::renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderFillRect(Environment::renderer, NULL);
 
-	const float scale = 0.45f;
 	float screen_coefficient = std::min(WINDOW_WIDTH, WINDOW_HEIGHT) * scale;
 
-	// place the star
-	for (int i = 0; i < sky.size(); i++) {
-		if (!sky[i]) continue;
-		const Star& star = *sky[i];
-		
-		// Color
-		const uint8_t brightness = star.GetBrightness();
-		SDL_SetRenderDrawColor(Environment::renderer, star.GetColour().R, star.GetColour().G, star.GetColour().B, brightness);
+	// draw the star
+	auto sky_it = sky.begin();
+	while (sky_it != sky.end())
+	{
+		// get value from star
+		auto& star = sky_it->second;
 
-		// Screen Coordinates
-		const Vector2 screen_coords = Vector2(  screen_coefficient * star.GetScreenCoords().x + WINDOW_WIDTH_HALF,
-												screen_coefficient * star.GetScreenCoords().y + WINDOW_HEIGHT_HALF  );
+		if (star) {
+			// Color
+			const uint8_t brightness = star->GetBrightness();
+			SDL_SetRenderDrawColor(Environment::renderer, star->GetColour().R, star->GetColour().G, star->GetColour().B, brightness);
 
-		// Only draw star if it is on screen
-		bool x_in_bounds = screen_coords.x > 0 && screen_coords.x < WINDOW_WIDTH;
-		bool y_in_bounds = screen_coords.y > 0 && screen_coords.y < WINDOW_HEIGHT;
-		bool z_in_bounds = star.GetZ() > 0.f;
+			// Screen Coordinates
+			const Vector2 screen_coords = getScreenCoords(screen_coefficient, star->GetScreenCoords());
 
-		if (x_in_bounds && y_in_bounds && z_in_bounds) {
-			/*if (star.GetMagnitude() < 2.f) {
-				renderCircle(screen_coord, 0.75f, star.GetColour(), 4);
-			}
-			else {*/
+			// Only draw star if it is on screen
+			if (screencoordsInBounds(screen_coords, star->GetZ())) {
+				/*if (star.GetMagnitude() < 2.f) {
+					renderCircle(screen_coord, 0.75f, star.GetColour(), 4);
+				}
+				else {*/
 				SDL_RenderDrawPoint(Environment::renderer, static_cast<int>(round(screen_coords.x)), static_cast<int>(round(screen_coords.y)));
-			//}
+				//}
+			}
+		}
+
+		sky_it++;
+	}
+
+	// Draw constellations
+	SDL_SetRenderDrawColor(Environment::renderer, constellation_colour.R, constellation_colour.G, constellation_colour.B, 35);
+	for (auto& constellation : constellations) {
+		for (auto& star_pair : constellation) {
+			auto& star_a = sky.find(star_pair.first)->second;
+			auto& star_b = sky.find(star_pair.second)->second;
+			if (star_a && star_b) {
+				// Screen Coordinates
+				const Vector2 screen_coords_a = getScreenCoords(screen_coefficient, star_a->GetScreenCoords());
+				const Vector2 screen_coords_b = getScreenCoords(screen_coefficient, star_b->GetScreenCoords());
+
+				// Only draw if both stars are on screen
+				bool star_a_in_bounds = (screencoordsInBounds(screen_coords_a, star_a->GetZ()));
+				bool star_b_in_bounds = (screencoordsInBounds(screen_coords_b, star_b->GetZ()));
+
+				if (star_a_in_bounds != star_b_in_bounds) {
+					// only one star is in bounds. interpolate
+					// this interpolation function is not linear, it is a projection from 3D cartesian coordinates to spherical coordinates
+					// step 1 is to get 3D bounds in XYZ cartesian domain by finding spherical coordinates of all 4 corners of window
+					// one plane at Z=0 and one plane at Z=1, both bounded by an edge function
+
+				} else if (star_a_in_bounds && star_b_in_bounds) {
+					renderLine(screen_coords_a, screen_coords_b, constellation_colour);
+				}
+			}
 		}
 	}
 
