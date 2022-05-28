@@ -214,6 +214,16 @@ void handleEvents() {
 	case SDL_QUIT:
 		bIsRunning = false;
 		break;
+	case SDL_MOUSEWHEEL:
+		if (event.wheel.y < 0) {
+			// zoom in
+
+		}
+		else if (event.wheel.y > 0) {
+			// zoom out
+
+		}
+		break;
 	default:
 		break;
 	}
@@ -342,8 +352,6 @@ void ReadCSV(std::string filename, bool has_header) {
 		}
 
 		while (getline(str, word, ',')) {
-
-
 			row.push_back(word);
 		}
 
@@ -392,7 +400,6 @@ SDL_Texture* drawStars() {
 	SDL_SetRenderDrawColor(Environment::renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderFillRect(Environment::renderer, NULL);
 
-	const float scale = 0.45f;
 	float screen_coefficient = std::min(WINDOW_WIDTH, WINDOW_HEIGHT) * scale;
 
 	// draw the star
@@ -436,7 +443,16 @@ SDL_Texture* drawStars() {
 				const Vector2 screen_coords_b = getScreenCoords(screen_coefficient, star_b->GetScreenCoords());
 
 				// Only draw if both stars are on screen
-				if (screencoordsInBounds(screen_coords_a, star_a->GetZ()) && screencoordsInBounds(screen_coords_b, star_b->GetZ())) {
+				bool star_a_in_bounds = (screencoordsInBounds(screen_coords_a, star_a->GetZ()));
+				bool star_b_in_bounds = (screencoordsInBounds(screen_coords_b, star_b->GetZ()));
+
+				if (star_a_in_bounds != star_b_in_bounds) {
+					// only one star is in bounds. interpolate
+					// this interpolation function is not linear, it is a projection from 3D cartesian coordinates to spherical coordinates
+					// step 1 is to get 3D bounds in XYZ cartesian domain by finding spherical coordinates of all 4 corners of window
+					// one plane at Z=0 and one plane at Z=1, both bounded by an edge function
+
+				} else if (star_a_in_bounds && star_b_in_bounds) {
 					renderLine(screen_coords_a, screen_coords_b, constellation_colour);
 				}
 			}
