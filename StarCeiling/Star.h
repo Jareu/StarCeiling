@@ -13,10 +13,10 @@ class Star
 
 public:
 
-	const float MAX_MAGNITUDE = -1.5f;
-	const float MIN_MAGNITUDE = 7.f;
-	const float DEFAULT_MAGNITUDE = MIN_MAGNITUDE;
-	const float DEFAULT_B_V = 0.58f;
+	static const long MAX_MAGNITUDE = -1.5;
+	static const long MIN_MAGNITUDE = 8.0;
+	static const long DEFAULT_MAGNITUDE = MIN_MAGNITUDE;
+	static const long DEFAULT_B_V = 0.58;
 	static const int MIN_TEMP = 1000; // kelvin
 	static const int MAX_TEMP = 40000; // kelvin
 	static const uint8_t MIN_BRIGHTNESS = 0;

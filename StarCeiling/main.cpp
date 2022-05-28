@@ -86,7 +86,8 @@ int main() {
 		}
 
 		// load stars
-		ReadCSV("star_data.csv", true);
+		// ReadCSV("star_data.csv", true);
+		ReadCSV("star_data_large.csv", true);
 
 		// create star texture
 		uint64_t t_before = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -360,7 +361,9 @@ void ReadCSV(std::string filename, bool has_header) {
 		star->SetLocation(Vector3{ x, y, z });
 
 		// move star into sky
-		sky.insert(std::pair<int, std::unique_ptr<Star>>(star->GetID(), std::move(star)));
+		if (star->GetMagnitude() < Star::MIN_MAGNITUDE) {
+			sky.insert(std::pair<int, std::unique_ptr<Star>>(star->GetID(), std::move(star)));
+		}
 	}
 
 	file.close();
