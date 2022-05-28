@@ -38,6 +38,9 @@ float latitude = 0.f; // latitude in radians, negative is south.
 const float EARTH_ROTATION_RATE = 20.f;
 const RGB constellation_colour = RGB{255, 255, 255};
 
+// UI variables
+static long window_scale = 0.45;
+
 std::map<int, std::unique_ptr<Star>> sky;
 std::vector<std::vector<std::pair<int, int>>> constellations;
 SDL_Texture* star_tex;
@@ -400,7 +403,7 @@ SDL_Texture* drawStars() {
 	SDL_SetRenderDrawColor(Environment::renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderFillRect(Environment::renderer, NULL);
 
-	float screen_coefficient = std::min(WINDOW_WIDTH, WINDOW_HEIGHT) * scale;
+	float screen_coefficient = std::min(WINDOW_WIDTH, WINDOW_HEIGHT) * window_scale;
 
 	// draw the star
 	auto sky_it = sky.begin();
