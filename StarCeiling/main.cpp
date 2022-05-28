@@ -39,7 +39,7 @@ const float EARTH_ROTATION_RATE = 20.f;
 const RGB constellation_colour = RGB{255, 255, 255};
 
 // UI variables
-static long window_scale = 0.45;
+const double window_scale = 0.45;
 
 std::map<int, std::unique_ptr<Star>> sky;
 std::vector<std::vector<std::pair<int, int>>> constellations;
@@ -89,8 +89,8 @@ int main() {
 		}
 
 		// load stars
-		// ReadCSV("star_data.csv", true);
-		ReadCSV("star_data_large.csv", true);
+		ReadCSV("star_data.csv", true);
+		// ReadCSV("star_data_large.csv", true);
 
 		// create star texture
 		uint64_t t_before = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -403,7 +403,7 @@ SDL_Texture* drawStars() {
 	SDL_SetRenderDrawColor(Environment::renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderFillRect(Environment::renderer, NULL);
 
-	float screen_coefficient = std::min(WINDOW_WIDTH, WINDOW_HEIGHT) * window_scale;
+	float screen_coefficient = static_cast<float>(std::min(WINDOW_WIDTH, WINDOW_HEIGHT) * window_scale);
 
 	// draw the star
 	auto sky_it = sky.begin();
