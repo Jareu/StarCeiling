@@ -31,11 +31,11 @@ private:
 	float magnitude_ = 0.f;
 	uint8_t brightness_ = 0;
 	float colour_index_ = 0.f;
-	Vector3 location_absolute_ = Vector3(0.f, 0.f, 0.f); // before transforms, normalized
-	Vector3 location_relative_ = Vector3(0.f, 0.f, 0.f); // after transform, normalized
+	Vector3<float> location_absolute_ = Vector3<float>(0.f, 0.f, 0.f); // before transforms, normalized
+	Vector3<float> location_relative_ = Vector3<float>(0.f, 0.f, 0.f); // after transform, normalized
 	VectorSpherical spherical_ = VectorSpherical(0.f, 0.f); // theta, phi
 	VectorSpherical spherical_n_ = VectorSpherical(0.f, 0.f); // theta, phi - normalized
-	Vector2 screen_coords_ = Vector2(0.f, 0.f); // X, Y, normalized
+	Vector2<float> screen_coords_ = Vector2<float>(0.f, 0.f); // X, Y, normalized
 	RGB colour_ = { 0,0,0 };
 	unsigned int temp_ = 0;
 
@@ -158,7 +158,6 @@ public:
 		colour_ = hsl_to_rgb(hsl);
 	}
 
-
 	inline float GetColourIndex() const {
 		return colour_index_;
 	}
@@ -172,7 +171,7 @@ public:
 	// calculate normalized screen coords from spherical coords
 	inline void CalculateScreenCoords() {
 		float r = spherical_n_.theta;
-		screen_coords_ = Vector2(r * static_cast<float>(cos(spherical_.phi)), r * static_cast<float>(sin(spherical_.phi)));
+		screen_coords_ = Vector2<float>(r * static_cast<float>(cos(spherical_.phi)), r * static_cast<float>(sin(spherical_.phi)));
 	}
 
 	inline void UpdateTransforms() {
@@ -189,17 +188,17 @@ public:
 		UpdateTransforms();
 	}
 
-	inline void SetLocation(const Vector3& pos) {
+	inline void SetLocation(const Vector3<float>& pos) {
 		SetLocation(pos.x, pos.y, pos.z);
 	}
 
 	// Gets this star's relative location
-	inline Vector3 GetLocation() const {
+	inline Vector3<float> GetLocation() const {
 		return location_relative_;
 	}
 
 	// Gets this star's absolute location before any transforms
-	inline Vector3 GetWorldLocation() const {
+	inline Vector3<float> GetWorldLocation() const {
 		return location_absolute_;
 	}
 
@@ -228,15 +227,15 @@ public:
 	}
 
 	void Rotate_X(float angle);
-	void Rotate_X(const Vector3& v, float angle);
+	void Rotate_X(const Vector3<float>& v, float angle);
 
 	void Rotate_Y(float angle);
-	void Rotate_Y(const Vector3& v, float angle);
+	void Rotate_Y(const Vector3<float>& v, float angle);
 
 	void Rotate_Z(float angle);
-	void Rotate_Z(const Vector3& v, float angle);
+	void Rotate_Z(const Vector3<float>& v, float angle);
 
-	inline Vector2 GetScreenCoords() const {
+	inline Vector2<float> GetScreenCoords() const {
 		return screen_coords_;
 	}
 

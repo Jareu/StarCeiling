@@ -10,18 +10,83 @@ static inline bool fequals_zero(const float& f) {
 	return (fabs(f) < ZERO_TOLERANCE);
 }
 
+struct RGB {
+	uint8_t R = 0;
+	uint8_t G = 0;
+	uint8_t B = 0;
+};
+
+struct HSL {
+	float H = 0;
+	float S = 0;
+	float L = 0;
+};
+
+template <typename T>
 class Vector2 {
 public:
-	float x = 0.f;
-	float y = 0.f;
+	T x = 0;
+	T y = 0;
 
 	Vector2() = default;
 
-	Vector2(float x, float y) : x{ x }, y{ y } {};
+	Vector2(T x, T y) : x{ x }, y{ y } {};
 
-	Vector2& operator+(const Vector2& other) {
-		this->x += other.x;
-		this->y += other.y;
+	Vector2 operator+(const Vector2<typename T>& rhs) {
+		Vector2 sum = Vector2(this->x + rhs.x, this->y + rhs.y);
+		return sum;
+	}
+
+	Vector2 operator-(const Vector2<typename T>& rhs) {
+		Vector2 subtraction = Vector2(this->x - rhs.x, this->y - rhs.y);
+		return subtraction;
+	}
+
+	Vector2& operator+=(const Vector2<typename T>& rhs) {
+		this->x = this->x + rhs.x;
+		this->y = this->y + rhs.y;
+		return *this;
+	}
+
+	Vector2& operator-=(const Vector2<typename T>& rhs) {
+		this->x = this->x - rhs.x;
+		this->y = this->y - rhs.y;
+		return *this;
+	}
+};
+
+template <typename T>
+class Vector3 {
+public:
+	T x = 0;
+	T y = 0;
+	T z = 0;
+
+	Vector3() = default;
+
+	Vector3(T x, T y, T z) : x{ x }, y{ y }, z{ z } {};
+
+	Vector3 operator+(const Vector3<typename T>& rhs) {
+		Vector3 sum = Vector3(this->x + rhs.x, this->y + rhs.y, this->z + rhs.z);
+		return sum;
+	}
+
+	Vector3 operator-(const Vector3<typename T>& rhs) {
+		Vector3 subtraction = Vector3(this->x - rhs.x, this->y - rhs.y, this->z - rhs.z);
+		return subtraction;
+	}
+
+	Vector3& operator+=(const Vector3<typename T>& rhs) {
+		this->x = this->x + rhs.x;
+		this->y = this->y + rhs.y;
+		this->z = this->z + rhs.z;
+		return *this;
+	}
+
+	Vector3& operator-=(const Vector3<typename T>& rhs) {
+		this->x = this->x - rhs.x;
+		this->y = this->y - rhs.y;
+		this->z = this->z - rhs.z;
 		return *this;
 	}
 };
@@ -37,23 +102,6 @@ public:
 
 	VectorSpherical& operator+(const VectorSpherical& other) {
 		VectorSpherical sum = VectorSpherical(this->theta + other.theta, this->phi + other.phi);
-		return sum;
-	}
-};
-
-
-class Vector3 {
-public:
-	float x = 0.f;
-	float y = 0.f;
-	float z = 0.f;
-
-	Vector3() = default;
-
-	Vector3(float x, float y, float z) : x{ x }, y{ y }, z{ z } {};
-
-	Vector3& operator+(const Vector3& other) {
-		Vector3 sum = Vector3(this->x + other.x, this->y + other.y, this->z + other.z);
 		return sum;
 	}
 };

@@ -142,30 +142,30 @@ void addStarsToConstellation(std::vector<std::pair<int, int>>& constellation, co
 	constellation.push_back(std::pair<int, int>(star_a, star_b));
 }
 
-Vector3 Rotate_X(const Vector3& v, float angle) {
+Vector3<float> Rotate_X(const Vector3<float>& v, float angle) {
 	float cosa = cos(angle);
 	float sina = sin(angle);
-	Vector3 new_loc = {};
+	Vector3<float> new_loc = {};
 	new_loc.x = v.x;
 	new_loc.y = v.y * cosa - v.z * sina;
 	new_loc.z = v.y * sina + v.z * cosa;
 	return new_loc;
 }
 
-Vector3 Rotate_Y(const Vector3& v, float angle) {
+Vector3<float> Rotate_Y(const Vector3<float>& v, float angle) {
 	float cosa = cos(angle);
 	float sina = sin(angle);
-	Vector3 new_loc = {};
+	Vector3<float> new_loc = {};
 	new_loc.x = v.x * cosa + v.z * sina;
 	new_loc.y = v.y;
 	new_loc.z = v.z * cosa - v.x * sina;
 	return new_loc;
 }
 
-Vector3 Rotate_Z(const Vector3& v, float angle) {
+Vector3<float> Rotate_Z(const Vector3<float>& v, float angle) {
 	float cosa = cos(angle);
 	float sina = sin(angle);
-	Vector3 new_loc = {};
+	Vector3<float> new_loc = {};
 	new_loc.x = v.x * cosa - v.y * sina;
 	new_loc.y = v.x * sina + v.y * cosa;
 	new_loc.z = v.z;
@@ -260,8 +260,7 @@ void handleEvents() {
 
 	}
 }
-
-bool renderLine( const Vector2 start, const Vector2 end, const RGB& color)
+bool renderLine(const Vector2<int> start, const Vector2<int> end, const RGB& color)
 {
 	RGB oldc;
 
@@ -272,11 +271,11 @@ bool renderLine( const Vector2 start, const Vector2 end, const RGB& color)
 	// Draw a line
 	//---
 	int ret = SDL_RenderDrawLine(
-				Environment::renderer, // SDL_Renderer* renderer: the renderer in which draw
-				static_cast<int>(round(start.x)),               // int x1: x of the starting point
-				static_cast<int>(round(start.y)),          // int y1: y of the starting point
-				static_cast<int>(round(end.x)),                 // int x2: x of the end point
-				static_cast<int>(round(end.y)));           // int y2: y of the end point
+		Environment::renderer, // SDL_Renderer* renderer: the renderer in which draw
+		start.x,               // int x1: x of the starting point
+		start.y,          // int y1: y of the starting point
+		end.x,                 // int x2: x of the end point
+		end.y);           // int y2: y of the end point
 
 	if (ret != 0)
 	{
@@ -291,7 +290,37 @@ bool renderLine( const Vector2 start, const Vector2 end, const RGB& color)
 	return true;
 }
 
-void renderCircle(const Vector2 center, float radius, const RGB& color, unsigned int sides)
+bool renderLine(const Vector2<float> start, const Vector2<float> end, const RGB& color)
+{
+	RGB oldc;
+
+	int ww, wh;
+	SDL_GetWindowSize(Environment::window,
+		&ww,
+		&wh);
+	// Draw a line
+	//---
+	int ret = SDL_RenderDrawLine(
+		Environment::renderer, // SDL_Renderer* renderer: the renderer in which draw
+		static_cast<int>(round(start.x)),               // int x1: x of the starting point
+		static_cast<int>(round(start.y)),          // int y1: y of the starting point
+		static_cast<int>(round(end.x)),                 // int x2: x of the end point
+		static_cast<int>(round(end.y)));           // int y2: y of the end point
+
+	if (ret != 0)
+	{
+		const char* error = SDL_GetError();
+		if (*error != '\0')
+		{
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not renderDrawLine. SDL Error: %s at line #%d of file %s/n", error, __LINE__, __FILE__);
+			SDL_ClearError();
+		}
+		return false;
+	}
+	return true;
+}
+
+void renderCircle(const Vector2<float> center, float radius, const RGB& color, unsigned int sides)
 {
 	if (sides == 0)
 	{
@@ -301,7 +330,7 @@ void renderCircle(const Vector2 center, float radius, const RGB& color, unsigned
 	float d_a = _2PI / sides,
 		angle = d_a;
 
-	Vector2 start, end;
+	Vector2<float> start, end;
 	end.x = radius;
 	end.y = 0.0f;
 	end = end + center;
@@ -382,11 +411,11 @@ void ReadCSV(std::string filename, bool has_header) {
 	std::cout << "Successfully read " << sky.size() << " stars.\n";
 }
 
-Vector2 getScreenCoords(const float scalar, const Vector2& coords_n) {
-	return Vector2(scalar * coords_n.x + WINDOW_WIDTH_HALF, scalar * coords_n.y + WINDOW_HEIGHT_HALF);
+Vector2<int> getScreenCoords(const float scalar, const Vector2<float>& coords_n) {
+	return Vector2<int>(scalar * coords_n.x + WINDOW_WIDTH_HALF, scalar * coords_n.y + WINDOW_HEIGHT_HALF);
 }
 
-bool screencoordsInBounds(Vector2 screen_coords, float Z) {
+bool screencoordsInBounds(Vector2<int> screen_coords, float Z) {
 	bool x_in_bounds = screen_coords.x > 0 && screen_coords.x < WINDOW_WIDTH;
 	bool y_in_bounds = screen_coords.y > 0 && screen_coords.y < WINDOW_HEIGHT;
 	bool z_in_bounds = Z > 0.f;
