@@ -231,15 +231,20 @@ public:
 
 class VectorSpherical {
 public:
-	float theta  = 0.f;
+	float theta = 0.f;
 	float phi = 0.f;
 
 	VectorSpherical() = default;
 
 	VectorSpherical(float theta, float phi) : theta{ theta }, phi{ phi } {};
 
-	VectorSpherical& operator+(const VectorSpherical& other) {
+	VectorSpherical operator+(const VectorSpherical& other) {
 		VectorSpherical sum = VectorSpherical(this->theta + other.theta, this->phi + other.phi);
+		return sum;
+	}
+
+	VectorSpherical operator-(const VectorSpherical& other) {
+		VectorSpherical sum = VectorSpherical(this->theta - other.theta, this->phi - other.phi);
 		return sum;
 	}
 };
