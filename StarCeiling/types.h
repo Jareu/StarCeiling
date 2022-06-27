@@ -42,6 +42,36 @@ public:
 		return subtraction;
 	}
 
+	Vector2 operator*(const Vector2<typename T>& rhs) {
+		Vector2 sum = Vector2(this->x * rhs.x, this->y * rhs.y);
+		return sum;
+	}
+
+	Vector2 operator/(const Vector2<typename T>& rhs) {
+		Vector2 subtraction = Vector2(this->x / rhs.x, this->y / rhs.y);
+		return subtraction;
+	}
+
+	Vector2 operator+(const typename T& rhs) {
+		Vector2 sum = Vector2(this->x + rhs, this->y + rhs);
+		return sum;
+	}
+
+	Vector2 operator-(const typename T& rhs) {
+		Vector2 subtraction = Vector2(this->x - rhs, this->y - rhs);
+		return subtraction;
+	}
+
+	Vector2 operator*(const typename T& rhs) {
+		Vector2 sum = Vector2(this->x * rhs, this->y * rhs);
+		return sum;
+	}
+
+	Vector2 operator/(const typename T& rhs) {
+		Vector2 subtraction = Vector2(this->x / rhs, this->y / rhs);
+		return subtraction;
+	}
+
 	Vector2& operator+=(const Vector2<typename T>& rhs) {
 		this->x = this->x + rhs.x;
 		this->y = this->y + rhs.y;
@@ -51,6 +81,42 @@ public:
 	Vector2& operator-=(const Vector2<typename T>& rhs) {
 		this->x = this->x - rhs.x;
 		this->y = this->y - rhs.y;
+		return *this;
+	}
+
+	Vector2& operator*=(const Vector2<typename T>& rhs) {
+		this->x = this->x * rhs.x;
+		this->y = this->y * rhs.y;
+		return *this;
+	}
+
+	Vector2& operator/=(const Vector2<typename T>& rhs) {
+		this->x = this->x / rhs.x;
+		this->y = this->y / rhs.y;
+		return *this;
+	}
+
+	Vector2& operator+=(const typename T& rhs) {
+		this->x = this->x + rhs;
+		this->y = this->y + rhs;
+		return *this;
+	}
+
+	Vector2& operator-=(const typename T& rhs) {
+		this->x = this->x - rhs;
+		this->y = this->y - rhs;
+		return *this;
+	}
+
+	Vector2& operator*=(const typename T& rhs) {
+		this->x = this->x * rhs;
+		this->y = this->y * rhs;
+		return *this;
+	}
+
+	Vector2& operator/=(const typename T& rhs) {
+		this->x = this->x / rhs;
+		this->y = this->y / rhs;
 		return *this;
 	}
 };
