@@ -249,4 +249,3 @@ public:
 
 	static RGB TemperatureToColour(unsigned int temp);
 };
-

@@ -10,7 +10,9 @@
 
 int main();
 void handleEvents();
+void handleUserInput();
 void update();
+void updateZoom();
 void render();
 
 void addStarsToConstellation(std::vector<std::pair<int, int>>& constellation, const int star_a, const int star_b);
