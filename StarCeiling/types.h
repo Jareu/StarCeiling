@@ -142,6 +142,36 @@ public:
 		return subtraction;
 	}
 
+	Vector3 operator*(const Vector3<typename T>& rhs) {
+		Vector3 sum = Vector3(this->x * rhs.x, this->y * rhs.y, this->z * rhs.z);
+		return sum;
+	}
+
+	Vector3 operator/(const Vector3<typename T>& rhs) {
+		Vector3 subtraction = Vector3(this->x / rhs.x, this->y / rhs.y, this->z / rhs.z);
+		return subtraction;
+	}
+
+	Vector3 operator+(const typename T& rhs) {
+		Vector3 sum = Vector3(this->x + rhs, this->y + rhs, this->z + rhs);
+		return sum;
+	}
+
+	Vector3 operator-(const typename T& rhs) {
+		Vector3 subtraction = Vector3(this->x - rhs, this->y - rhs, this->z - rhs);
+		return subtraction;
+	}
+
+	Vector3 operator*(const typename T& rhs) {
+		Vector3 sum = Vector3(this->x * rhs, this->y * rhs, this->z * rhs);
+		return sum;
+	}
+
+	Vector3 operator/(const typename T& rhs) {
+		Vector3 subtraction = Vector3(this->x / rhs, this->y / rhs, this->z / rhs);
+		return subtraction;
+	}
+
 	Vector3& operator+=(const Vector3<typename T>& rhs) {
 		this->x = this->x + rhs.x;
 		this->y = this->y + rhs.y;
@@ -153,6 +183,48 @@ public:
 		this->x = this->x - rhs.x;
 		this->y = this->y - rhs.y;
 		this->z = this->z - rhs.z;
+		return *this;
+	}
+
+	Vector3& operator*=(const Vector3<typename T>& rhs) {
+		this->x = this->x * rhs.x;
+		this->y = this->y * rhs.y;
+		this->z = this->z * rhs.z;
+		return *this;
+	}
+
+	Vector3& operator/=(const Vector3<typename T>& rhs) {
+		this->x = this->x / rhs.x;
+		this->y = this->y / rhs.y;
+		this->z = this->z / rhs.z;
+		return *this;
+	}
+
+	Vector3& operator+=(const typename T& rhs) {
+		this->x = this->x + rhs.x;
+		this->y = this->y + rhs.y;
+		this->z = this->z + rhs.z;
+		return *this;
+	}
+
+	Vector3& operator-=(const typename T& rhs) {
+		this->x = this->x - rhs.x;
+		this->y = this->y - rhs.y;
+		this->z = this->z - rhs.z;
+		return *this;
+	}
+
+	Vector3& operator*=(const typename T& rhs) {
+		this->x = this->x * rhs.x;
+		this->y = this->y * rhs.y;
+		this->z = this->z * rhs.z;
+		return *this;
+	}
+
+	Vector3& operator/=(const typename T& rhs) {
+		this->x = this->x / rhs.x;
+		this->y = this->y / rhs.y;
+		this->z = this->z / rhs.z;
 		return *this;
 	}
 };
