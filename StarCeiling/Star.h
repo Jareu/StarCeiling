@@ -13,10 +13,10 @@ class Star
 
 public:
 
-	static const long MAX_MAGNITUDE = -1.5;
-	static const long MIN_MAGNITUDE = 8.0;
+	static const long MAX_MAGNITUDE = static_cast<long>(-1.5);
+	static const long MIN_MAGNITUDE = static_cast<long>(8.0);
 	static const long DEFAULT_MAGNITUDE = MIN_MAGNITUDE;
-	static const long DEFAULT_B_V = 0.58;
+	static const long DEFAULT_B_V = static_cast<long>(0.58);
 	static const int MIN_TEMP = 1000; // kelvin
 	static const int MAX_TEMP = 40000; // kelvin
 	static const uint8_t MIN_BRIGHTNESS = 0;
@@ -39,17 +39,15 @@ private:
 	RGB colour_ = { 0,0,0 };
 	unsigned int temp_ = 0;
 
-	inline void NormalizeAbsoluteLocation() {
-		float r = static_cast<float>(sqrt(location_absolute_.x*location_absolute_.x + location_absolute_.y*location_absolute_.y + location_absolute_.z*location_absolute_.z));
-		location_absolute_.x /= r;
-		location_absolute_.y /= r;
-		location_absolute_.z /= r;
-	}
 
-	inline void SetBrightness() {
+
+	void SetBrightness() {
 		float brightness_n = (1.f - magnitude_ / (MIN_MAGNITUDE - MAX_MAGNITUDE));
 		brightness_ = std::clamp(static_cast<uint8_t>(MIN_BRIGHTNESS + std::max(MAX_BRIGHTNESS - MIN_BRIGHTNESS, 0) * brightness_n), static_cast<uint8_t>(0), UINT8_MAX);
 	}
+
+	void CalculateSphericalCoords();
+	void NormalizeAbsoluteLocation();
 
 public:
 
@@ -166,8 +164,6 @@ public:
 		return colour_;
 	}
 
-	void CalculateSphericalCoords();
-
 	// calculate normalized screen coords from spherical coords
 	inline void CalculateScreenCoords() {
 		float r = spherical_n_.theta;
@@ -196,9 +192,15 @@ public:
 	inline Vector3<float> GetLocation() const {
 		return location_relative_;
 	}
+	
+	void SetAbsoluteLocation(const float x, const float y, const float z);
+
+	void SetAbsoluteLocation(const Vector3<float>& pos) {
+		SetAbsoluteLocation(pos.x, pos.y, pos.z);
+	}
 
 	// Gets this star's absolute location before any transforms
-	inline Vector3<float> GetWorldLocation() const {
+	inline Vector3<float> GetAbsoluteLocation() const {
 		return location_absolute_;
 	}
 
