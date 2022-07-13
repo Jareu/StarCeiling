@@ -289,7 +289,7 @@ void render() {
 		ui_texture = renderText("LOADING...", eFontSize::TITLE, WINDOW_WIDTH_HALF, WINDOW_HEIGHT_HALF - 30, true);
 	}
 	else {
-		drawStars();
+		star_texture = drawStars();
 		ui_texture = renderText("Testing", eFontSize::SMALL, 20, 20, false);
 	}
 
