@@ -3,6 +3,7 @@
 #pragma warning(push, 0)
 #include "SDL.h"
 #include "SDL_image.h"
+#include "SDL_ttf.h"
 #pragma warning(pop)
 #undef main
 
@@ -20,6 +21,7 @@ bool screencoordsInBounds(Vector2<int> screen_coords, float Z);
 Vector2<int> getScreenCoords(const float scalar, const Vector2<float>& coords_n);
 SDL_Texture* drawStars();
 void ReadCSV(std::string filename, bool has_header = true);
+SDL_Texture* renderText(const std::string& text, eFontSize size, uint16_t x, uint16_t y, bool center);
 bool renderLine(const Vector2<float> start, const Vector2<float> end, const RGB& color);
 bool renderLine(const Vector2<int> start, const Vector2<int> end, const RGB& color);
 void renderCircle(const Vector2<int> center, float radius, const RGB& color, unsigned int sides);

@@ -22,6 +22,14 @@ struct HSL {
 	float L = 0;
 };
 
+// Fonts
+enum class eFontSize {
+	SMALL,
+	MEDIUM,
+	LARGE,
+	TITLE
+};
+
 template <typename T>
 class Vector2 {
 public:

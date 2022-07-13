@@ -20,18 +20,31 @@
 namespace Environment {
 	SDL_Renderer* renderer;
 	SDL_Window* window;
+	TTF_Font* font_small;
+	TTF_Font* font_medium;
+	TTF_Font* font_large;
+	TTF_Font* font_title;
+	const std::string fontname = "arial";
+	bool bUseBlendedFonts = true;
+	bool bFontLoaded = false;
 }
 
 bool bIsRunning = false;
 bool bStarsChanged = false;
 bool bFullscreen = true;
 bool bIsActive = false;
+bool bLoadingStars = true;
 
 const int WINDOW_WIDTH = 1920;
 const int WINDOW_HEIGHT = 1080;
 
 const int WINDOW_WIDTH_HALF = static_cast<int> (WINDOW_WIDTH / 2);
 const int WINDOW_HEIGHT_HALF = static_cast<int> (WINDOW_HEIGHT / 2);
+
+static const uint8_t FONT_SIZE_SMALL = 16;
+static const uint8_t FONT_SIZE_MEDIUM = 22;
+static const uint8_t FONT_SIZE_LARGE = 28;
+static const uint8_t FONT_SIZE_TITLE = 52;
 
 const float SECONDS_IN_A_DAY = 86400.f; // (86400 seconds = 1 day)
 float earth_rotation = 0.f; // rotation of earth in radians
@@ -58,7 +71,9 @@ unsigned short zoom_steps = MIN_ZOOM;
 std::map<int, std::unique_ptr<Star>> sky;
 std::vector<std::vector<std::pair<int, int>>> constellations;
 SDL_Texture* star_texture;
+SDL_Texture* ui_texture = NULL;
 SDL_Rect star_rect;
+
 
 void setLatitude(float degrees) {
 	latitude = static_cast<float>(M_PI * (0.5f - degrees / 180));
@@ -99,6 +114,27 @@ int main() {
 		return EXIT_FAILURE;
 	}
 
+	// load font
+	if (TTF_Init() != 0) {
+		// SDL failed. Output error message and exit
+		std::cout << "Failed to initialize fonts:" << SDL_GetError() << "\n";
+		return EXIT_FAILURE;
+	}
+
+	Environment::font_small = TTF_OpenFont((Environment::fontname + ".ttf").c_str(), FONT_SIZE_SMALL);
+	Environment::font_medium = TTF_OpenFont((Environment::fontname + ".ttf").c_str(), FONT_SIZE_MEDIUM);
+	Environment::font_large = TTF_OpenFont((Environment::fontname + ".ttf").c_str(), FONT_SIZE_LARGE);
+	Environment::font_title = TTF_OpenFont((Environment::fontname + ".ttf").c_str(), FONT_SIZE_TITLE);
+
+	// check that fonts loaded successfully
+	Environment::bFontLoaded = (Environment::font_small && Environment::font_medium && Environment::font_large && Environment::font_title);
+	if (!Environment::bFontLoaded) {
+		std::string err = SDL_GetError();
+		std::cout << "Failed to load font '" << Environment::fontname << ".ttf': " << err << "\n";
+		return EXIT_FAILURE;
+
+	}
+
 	// Create Window
 	Environment::window = SDL_CreateWindow("Test Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_FLAGS);
 	if (!Environment::window) {
@@ -124,11 +160,17 @@ int main() {
 	SDL_RenderClear(Environment::renderer); // initialize backbuffer
 	bIsRunning = true; // everything was set up successfully
 	bIsActive = true;
+	bLoadingStars = true;
 	SDL_ShowWindow(Environment::window);
+
+	// show loading window
+	render();
 
 	// load stars
 	ReadCSV("star_data.csv", true);
 	// ReadCSV("star_data_large.csv", true);
+
+	bLoadingStars = false;
 
 	// create star texture
 	uint64_t t_before = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
@@ -156,7 +198,16 @@ int main() {
 	Environment::renderer = NULL;
 	Environment::window = NULL;
 
+	// destroy textures
 	SDL_DestroyTexture(star_texture);
+	SDL_DestroyTexture(ui_texture);
+
+	// close fonts
+	TTF_CloseFont(Environment::font_small);
+	TTF_CloseFont(Environment::font_medium);
+	TTF_CloseFont(Environment::font_large);
+	TTF_CloseFont(Environment::font_title);
+	TTF_Quit();
 
 	IMG_Quit();
 	SDL_Quit();
@@ -215,7 +266,7 @@ void update() {
 
 		if (star) {
 			// rotate around Y axis by time of day, then rotate about X axis by latitude
-			Vector3 new_loc = star->GetWorldLocation();
+			Vector3<float> new_loc = star->GetAbsoluteLocation();
 			star->Rotate_Y(new_loc, earth_rotation);
 			star->Rotate_X(latitude);
 			star->UpdateTransforms();
@@ -229,11 +280,22 @@ void update() {
 
 // Render the Game
 void render() {
+	if (!bIsActive) return;
+
 	SDL_SetRenderDrawColor(Environment::renderer, 0, 0, 0, 255);
 	SDL_RenderClear(Environment::renderer);
-	star_texture = drawStars();
-	SDL_SetRenderTarget(Environment::renderer, NULL);
+
+	if (bLoadingStars) {
+		ui_texture = renderText("LOADING...", eFontSize::TITLE, WINDOW_WIDTH_HALF, WINDOW_HEIGHT_HALF - 30, true);
+	}
+	else {
+		drawStars();
+		ui_texture = renderText("Testing", eFontSize::SMALL, 20, 20, false);
+	}
+
+	SDL_SetRenderTarget(Environment::renderer, NULL); // NULL: render to the window
 	SDL_RenderCopy(Environment::renderer, star_texture, NULL, &star_rect);
+	SDL_RenderCopy(Environment::renderer, ui_texture, NULL, NULL);
 	SDL_RenderPresent(Environment::renderer);
 }
 
@@ -338,6 +400,62 @@ void handleUserInput() {
 		// Key Right
 
 	}
+}
+
+SDL_Texture* renderText(const std::string& text, eFontSize size, uint16_t x, uint16_t y, bool center)
+{
+	if (!Environment::bFontLoaded) return nullptr; // in case fonts didn't load
+
+	SDL_Texture* font_texture = nullptr;
+	SDL_Color foreground = { 128, 128, 200 };
+
+	// select appropriate font for size
+	TTF_Font* font = nullptr;
+	switch (size) {
+	case eFontSize::SMALL:
+		font = Environment::font_small;
+		break;
+	case eFontSize::MEDIUM:
+		font = Environment::font_medium;
+		break;
+	case eFontSize::LARGE:
+		font = Environment::font_large;
+		break;
+	case eFontSize::TITLE:
+		font = Environment::font_title;
+		break;
+	}
+
+	if (text.length() > 0) {
+		SDL_Surface* text_surf = nullptr;
+		if (Environment::bUseBlendedFonts) {
+			text_surf = TTF_RenderText_Blended(font, text.c_str(), foreground);
+		}
+		else {
+			text_surf = TTF_RenderText_Solid(font, text.c_str(), foreground);
+		}
+
+		if (!text_surf) {
+			std::cout << "Failed to render TTF font: " << SDL_GetError() << "\n";
+			return nullptr;
+		}
+
+		font_texture = SDL_CreateTextureFromSurface(Environment::renderer, text_surf);
+		if (!font_texture) {
+			SDL_FreeSurface(text_surf);
+			std::cout << "Failed to texture for TTF font: " << SDL_GetError() << "\n";
+			return nullptr;
+		}
+
+		SDL_Rect dest = SDL_Rect{ x, y, text_surf->w, text_surf->h };
+		if (center) dest.x -= static_cast<int>(text_surf->w / 2.0f); // centered
+		SDL_RenderCopy(Environment::renderer, font_texture, NULL, &dest);
+
+		SDL_DestroyTexture(font_texture);
+		SDL_FreeSurface(text_surf);
+	}
+
+	return font_texture;
 }
 
 
