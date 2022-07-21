@@ -9,6 +9,13 @@ Star::Star() {
 
 }
 
+void Star::NormalizeAbsoluteLocation() {
+	float r = static_cast<float>(sqrt(location_absolute_.x * location_absolute_.x + location_absolute_.y * location_absolute_.y + location_absolute_.z * location_absolute_.z));
+	location_absolute_.x /= r;
+	location_absolute_.y /= r;
+	location_absolute_.z /= r;
+}
+
 void Star::CalculateSphericalCoords() {
 	// theta
 	spherical_.theta = static_cast<float>(acos(location_relative_.z));
@@ -19,6 +26,15 @@ void Star::CalculateSphericalCoords() {
 	// normalize
 	spherical_n_.theta = 2.f * spherical_.theta / static_cast<float>(M_PI);
 	spherical_n_.phi = spherical_.phi / _2PI + 0.5f;
+}
+
+void Star::SetAbsoluteLocation(const float x, const float y, const float z) {
+	location_absolute_.x = x;
+	location_absolute_.y = y;
+	location_absolute_.z = z;
+	NormalizeAbsoluteLocation();
+	location_relative_ = location_absolute_;
+	UpdateTransforms();
 }
 
 void Star::Rotate_X(float angle) {
