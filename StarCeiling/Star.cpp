@@ -190,22 +190,6 @@ void Star::UpdateTransforms() {
 	CalculateScreenCoords();
 }
 
-void Star::SetAbsoluteLocation(const float x, const float y, const float z) {
-	location_absolute_.x = x;
-	location_absolute_.y = y;
-	location_absolute_.z = z;
-	NormalizeAbsoluteLocation();
-	location_relative_ = location_absolute_;
-	UpdateTransforms();
-}
-
-void Star::NormalizeAbsoluteLocation() {
-	float r = static_cast<float>(sqrt(location_absolute_.x * location_absolute_.x + location_absolute_.y * location_absolute_.y + location_absolute_.z * location_absolute_.z));
-	location_absolute_.x /= r;
-	location_absolute_.y /= r;
-	location_absolute_.z /= r;
-}
-
 void Star::SetBrightness() {
 	float brightness_n = (1.f - magnitude_ / (MIN_MAGNITUDE - MAX_MAGNITUDE));
 	brightness_ = std::clamp(static_cast<uint8_t>(MIN_BRIGHTNESS + std::max(MAX_BRIGHTNESS - MIN_BRIGHTNESS, 0) * brightness_n), static_cast<uint8_t>(0), UINT8_MAX);
