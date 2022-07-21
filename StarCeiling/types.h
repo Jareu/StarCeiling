@@ -1,59 +1,123 @@
 #pragma once
 
+#ifndef _USE_MATH_DEFINES
 #define _USE_MATH_DEFINES
+#endif
+
 #include <math.h>
 
-static const float ZERO_TOLERANCE = 0.0000001f;
-static const float _2PI = static_cast<float>(M_PI) * 2.f;
-
-static inline bool fequals_zero(const float& f) {
-	return (fabs(f) < ZERO_TOLERANCE);
-}
-
+template <typename T>
 class Vector2 {
 public:
-	float x = 0.f;
-	float y = 0.f;
+	T x = 0;
+	T y = 0;
 
 	Vector2() = default;
 
-	Vector2(float x, float y) : x{ x }, y{ y } {};
+	Vector2(T x, T y) : x{ x }, y{ y } {};
 
-	Vector2& operator+(const Vector2& other) {
-		this->x += other.x;
-		this->y += other.y;
+	Vector2 operator+(const Vector2<typename T>& rhs) {
+		Vector2 sum = Vector2(this->x + rhs.x, this->y + rhs.y);
+		return sum;
+	}
+
+	Vector2 operator-(const Vector2<typename T>& rhs) {
+		Vector2 subtraction = Vector2(this->x - rhs.x, this->y - rhs.y);
+		return subtraction;
+	}
+
+	Vector2& operator+=(const Vector2<typename T>& rhs) {
+		this->x = this->x + rhs.x;
+		this->y = this->y + rhs.y;
+		return *this;
+	}
+
+	Vector2& operator-=(const Vector2<typename T>& rhs) {
+		this->x = this->x - rhs.x;
+		this->y = this->y - rhs.y;
+		return *this;
+	}
+};
+
+template <typename T>
+class Vector3 {
+public:
+	T x = 0;
+	T y = 0;
+	T z = 0;
+
+	Vector3() = default;
+
+	Vector3(T x, T y, T z) : x{ x }, y{ y }, z{ z } {};
+
+	Vector3 operator+(const Vector3<typename T>& rhs) {
+		Vector3 sum = Vector3(this->x + rhs.x, this->y + rhs.y, this->z + rhs.z);
+		return sum;
+	}
+
+	Vector3 operator-(const Vector3<typename T>& rhs) {
+		Vector3 subtraction = Vector3(this->x - rhs.x, this->y - rhs.y, this->z - rhs.z);
+		return subtraction;
+	}
+
+	Vector3& operator+=(const Vector3<typename T>& rhs) {
+		this->x = this->x + rhs.x;
+		this->y = this->y + rhs.y;
+		this->z = this->z + rhs.z;
+		return *this;
+	}
+
+	Vector3& operator-=(const Vector3<typename T>& rhs) {
+		this->x = this->x - rhs.x;
+		this->y = this->y - rhs.y;
+		this->z = this->z - rhs.z;
 		return *this;
 	}
 };
 
 class VectorSpherical {
 public:
-	float theta  = 0.f;
+	float theta = 0.f;
 	float phi = 0.f;
 
 	VectorSpherical() = default;
 
 	VectorSpherical(float theta, float phi) : theta{ theta }, phi{ phi } {};
 
-	VectorSpherical& operator+(const VectorSpherical& other) {
+	VectorSpherical operator+(const VectorSpherical& other) {
 		VectorSpherical sum = VectorSpherical(this->theta + other.theta, this->phi + other.phi);
+		return sum;
+	}
+
+	VectorSpherical operator-(const VectorSpherical& other) {
+		VectorSpherical sum = VectorSpherical(this->theta - other.theta, this->phi - other.phi);
 		return sum;
 	}
 };
 
+struct RGB {
+	uint8_t R = 0;
+	uint8_t G = 0;
+	uint8_t B = 0;
+};
 
-class Vector3 {
-public:
-	float x = 0.f;
-	float y = 0.f;
-	float z = 0.f;
+struct RGBA {
+	uint8_t R = 0;
+	uint8_t G = 0;
+	uint8_t B = 0;
+	uint8_t A = 0;
+};
 
-	Vector3() = default;
+struct HSL {
+	float H = 0;
+	float S = 0;
+	float L = 0;
+};
 
-	Vector3(float x, float y, float z) : x{ x }, y{ y }, z{ z } {};
-
-	Vector3& operator+(const Vector3& other) {
-		Vector3 sum = Vector3(this->x + other.x, this->y + other.y, this->z + other.z);
-		return sum;
-	}
+// Fonts
+enum class eFontSize {
+	SMALL,
+	MEDIUM,
+	LARGE,
+	TITLE
 };

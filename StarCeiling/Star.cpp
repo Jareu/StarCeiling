@@ -1,4 +1,13 @@
+
+#include <algorithm>
+
 #include "Star.h"
+#include "globals.h"
+#include "utilities.h"
+
+Star::Star() {
+
+}
 
 void Star::CalculateSphericalCoords() {
 	// theta
@@ -16,10 +25,10 @@ void Star::Rotate_X(float angle) {
 	Rotate_X(location_relative_, angle);
 }
 
-void Star::Rotate_X(const Vector3& v, float angle) {
+void Star::Rotate_X(const Vector3<float>& v, float angle) {
 	float cosa = static_cast<float>(cos(angle));
 	float sina = static_cast<float>(sin(angle));
-	Vector3 new_loc = {};
+	Vector3<float> new_loc = {};
 	new_loc.x = v.x;
 	new_loc.y = v.y * cosa - v.z * sina;
 	new_loc.z = v.y * sina + v.z * cosa;
@@ -30,10 +39,10 @@ void Star::Rotate_Y(float angle) {
 	Rotate_Y(location_relative_, angle);
 }
 
-void Star::Rotate_Y(const Vector3& v, float angle) {
+void Star::Rotate_Y(const Vector3<float>& v, float angle) {
 	float cosa = static_cast<float>(cos(angle));
 	float sina = static_cast<float>(sin(angle));
-	Vector3 new_loc = {};
+	Vector3<float> new_loc = {};
 	new_loc.x = v.x * cosa + v.z * sina;
 	new_loc.y = v.y;
 	new_loc.z = v.z * cosa - v.x * sina;
@@ -44,10 +53,10 @@ void Star::Rotate_Z(float angle) {
 	Rotate_Z(location_relative_, angle);
 }
 
-void Star::Rotate_Z(const Vector3& v, float angle) {
+void Star::Rotate_Z(const Vector3<float>& v, float angle) {
 	float cosa = static_cast<float>(cos(angle));
 	float sina = static_cast<float>(sin(angle));
-	Vector3 new_loc = {};
+	Vector3<float> new_loc = {};
 	new_loc.x = v.x * cosa - v.y * sina;
 	new_loc.y = v.x * sina + v.y * cosa;
 	new_loc.z = v.z;
@@ -98,4 +107,90 @@ RGB Star::TemperatureToColour(unsigned int temp) {
 	}
 
 	return output;
+}
+
+void Star::SetColourIndex(const std::string ci)
+{
+	if (ci.length() == 0) {
+		// default
+		colour_index_ = DEFAULT_B_V;
+	}
+	else {
+		colour_index_ = std::stof(ci);
+	}
+
+	temp_ = ColourIndexToTemperature(colour_index_);
+	colour_ = TemperatureToColour(temp_);
+	HSL hsl = rgb_to_hsl(static_cast<const RGB>(colour_));
+	hsl.L = 100.f;
+	hsl.S *= 0.4f;
+	colour_ = hsl_to_rgb(hsl);
+}
+
+void Star::SetHIP(const std::string hip) {
+	if (hip.length() == 0) return;
+	hip_ = std::stoi(hip);
+}
+
+void Star::SetID(const std::string id) {
+	if (id.length() == 0) return;
+	id_ = std::stoi(id);
+}
+
+void Star::SetHD(const std::string hd) {
+	if (hd.length() == 0) return;
+	hd_ = std::stoi(hd);
+}
+
+void Star::SetHR(const std::string hr) {
+	if (hr.length() == 0) return;
+	hr_ = std::stoi(hr);
+}
+
+void Star::SetMagnitude(const float magnitude) {
+	magnitude_ = magnitude;
+	SetBrightness();
+}
+
+void Star::SetMagnitude(const std::string magnitude) {
+	if (magnitude.length() == 0) {
+		magnitude_ = DEFAULT_MAGNITUDE; // default
+	}
+	else {
+		magnitude_ = std::stof(magnitude);
+	}
+
+	SetBrightness();
+}
+
+void Star::SetColourIndex(const float ci) {
+	colour_index_ = ci;
+	temp_ = ColourIndexToTemperature(ci);
+	colour_ = TemperatureToColour(temp_);
+}
+
+void Star::UpdateTransforms() {
+	CalculateSphericalCoords();
+	CalculateScreenCoords();
+}
+
+void Star::SetAbsoluteLocation(const float x, const float y, const float z) {
+	location_absolute_.x = x;
+	location_absolute_.y = y;
+	location_absolute_.z = z;
+	NormalizeAbsoluteLocation();
+	location_relative_ = location_absolute_;
+	UpdateTransforms();
+}
+
+void Star::NormalizeAbsoluteLocation() {
+	float r = static_cast<float>(sqrt(location_absolute_.x * location_absolute_.x + location_absolute_.y * location_absolute_.y + location_absolute_.z * location_absolute_.z));
+	location_absolute_.x /= r;
+	location_absolute_.y /= r;
+	location_absolute_.z /= r;
+}
+
+void Star::SetBrightness() {
+	float brightness_n = (1.f - magnitude_ / (MIN_MAGNITUDE - MAX_MAGNITUDE));
+	brightness_ = std::clamp(static_cast<uint8_t>(MIN_BRIGHTNESS + std::max(MAX_BRIGHTNESS - MIN_BRIGHTNESS, 0) * brightness_n), static_cast<uint8_t>(0), UINT8_MAX);
 }
