@@ -75,6 +75,8 @@ inline int ceiling_y = 5; // length in half metres
 inline Vector2<int> ceiling_size = {};
 inline Vector2<int> ceiling_offset = {};
 inline float ceiling_aspect = ceiling_x / static_cast<float>(ceiling_y);
+inline int segment_size = 0;
+inline std::vector<std::vector<int>> segments = {};
 
 
 static const float ZERO_TOLERANCE = 0.0000001f;

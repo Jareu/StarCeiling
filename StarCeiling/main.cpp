@@ -48,6 +48,8 @@ void calculateCeilingSize() {
 		ceiling_offset.x = static_cast<int>(std::round((WINDOW_WIDTH - ceiling_size.x) / 2.0));
 		ceiling_offset.y = margin;
 	}
+	
+	segment_size = ceiling_size.x / ceiling_x;
 }
 
 /*
@@ -247,6 +249,14 @@ void render() {
 
 		// draw border
 		renderRect(Vector2{ 0, 0 }, ceiling_size, RGBA{ 128, 128, 200, 128 });
+
+		// draw segments
+		for (int x = 0; x < ceiling_size.x; x += segment_size) {
+			renderLine(Vector2{ x, 0 }, Vector2{ x, ceiling_size.y }, RGB{ 100, 100, 160 });
+		}
+		for (int y = 0; y < ceiling_size.y; y += segment_size) {
+			renderLine(Vector2{ 0, y }, Vector2{ ceiling_size.x, y }, RGB{ 100, 100, 160 });
+		}
 
 		ui_texture = renderText("Testing", eFontSize::SMALL, 20, 20, false);
 	}
