@@ -16,7 +16,8 @@
 bool screencoordsInBounds(Vector2<int> screen_coords, float Z) {
 	bool x_in_bounds = screen_coords.x > 0 && screen_coords.x < ceiling_size.x;
 	bool y_in_bounds = screen_coords.y > 0 && screen_coords.y < ceiling_size.y;
-	bool z_in_bounds = Z > 0.f;
+	//bool z_in_bounds = Z > 0.f;
+	bool z_in_bounds = true;
 	return (x_in_bounds && y_in_bounds && z_in_bounds);
 }
 
@@ -114,7 +115,7 @@ Vector2<int> getScreenCoords(const float scalar, const Vector2<float>& coords_n)
 	// TODO: update below to a global variable updated only once
 	int x_half = ceiling_size.x / 2;
 	int y_half = ceiling_size.y / 2;
-	return Vector2<int>(static_cast<int>(scalar * coords_n.x + x_half), static_cast<int>(scalar * coords_n.y + y_half));
+	return Vector2<int>(static_cast<int>(round(scalar * coords_n.x + x_half)), static_cast<int>(round(scalar * coords_n.y + y_half)));
 }
 
 bool fequals_zero(const float& f) {
@@ -123,4 +124,60 @@ bool fequals_zero(const float& f) {
 
 void increment_time(const float delta_seconds) {
 	earth_rotation = fmod(earth_rotation + _2PI * delta_seconds / SECONDS_IN_A_DAY, _2PI);
+}
+
+void resetStarCount() {
+	num_stars_large = 0;
+	num_stars_medium = 0;
+	num_stars_small = 0;
+}
+
+void correctStarRotation(const double& angle) {
+	// rotate stars by 90 degrees
+	auto universe_i = universe.begin();
+	while (universe_i != universe.end())
+	{
+		// get value from star
+		auto& star = universe_i->second;
+
+		if (star) {
+			// rotate around Y axis by time of day, then rotate about X axis by latitude
+			Vector3 new_loc = star->GetAbsoluteLocation();
+			star->Rotate_X(static_cast<float>(angle));
+			star->SetAbsoluteLocation(star->GetLocation());
+		}
+
+		universe_i++;
+	}
+}
+
+/*
+	Sorts small, medium, and large groups of stars each by magnitude.
+*/
+void sortStars() {
+	std::sort(small_stars.begin(), small_stars.end(), sortStarsByMagnitude);
+	std::sort(medium_stars.begin(), medium_stars.end(), sortStarsByMagnitude);
+	std::sort(large_stars.begin(), large_stars.end(), sortStarsByMagnitude);
+}
+
+/*
+	Applies star magnitude thresholds to split stars up into groups of small, medium, and large
+*/
+void groupStarBySize(const Star& star) {
+	// get star's ID and magnitude
+	auto id_magnitude = std::pair<int, float>{ star.GetID(), star.GetMagnitude()};
+
+	// figure out where to put it
+	if (star.GetMagnitude() >= star_threshold_large.min && star.GetMagnitude() < star_threshold_large.max) {
+		// Large
+		large_stars.push_back(id_magnitude);
+	}
+	else if (star.GetMagnitude() >= star_threshold_medium.min && star.GetMagnitude() < star_threshold_medium.max) {
+		// Medium
+		medium_stars.push_back(id_magnitude);
+	}
+	else if (star.GetMagnitude() >= star_threshold_small.min && star.GetMagnitude() < star_threshold_small.max) {
+		// Small
+		small_stars.push_back(id_magnitude);
+	}
 }
