@@ -37,44 +37,44 @@ void Star::SetAbsoluteLocation(const float x, const float y, const float z) {
 	UpdateTransforms();
 }
 
-void Star::Rotate_X(float angle) {
+void Star::Rotate_X(double angle) {
 	Rotate_X(location_relative_, angle);
 }
 
-void Star::Rotate_X(const Vector3<float>& v, float angle) {
-	float cosa = static_cast<float>(cos(angle));
-	float sina = static_cast<float>(sin(angle));
+void Star::Rotate_X(const Vector3<float>& v, double angle) {
+	double cosa = cos(angle);
+	double sina = sin(angle);
 	Vector3<float> new_loc = {};
 	new_loc.x = v.x;
-	new_loc.y = v.y * cosa - v.z * sina;
-	new_loc.z = v.y * sina + v.z * cosa;
+	new_loc.y = static_cast<float>(v.y * cosa - v.z * sina);
+	new_loc.z = static_cast<float>(v.y * sina + v.z * cosa);
 	location_relative_ = new_loc;
 }
 
-void Star::Rotate_Y(float angle) {
+void Star::Rotate_Y(double angle) {
 	Rotate_Y(location_relative_, angle);
 }
 
-void Star::Rotate_Y(const Vector3<float>& v, float angle) {
-	float cosa = static_cast<float>(cos(angle));
-	float sina = static_cast<float>(sin(angle));
+void Star::Rotate_Y(const Vector3<float>& v, double angle) {
+	double cosa = cos(angle);
+	double sina = sin(angle);
 	Vector3<float> new_loc = {};
-	new_loc.x = v.x * cosa + v.z * sina;
+	new_loc.x = static_cast<float>(v.x * cosa + v.z * sina);
 	new_loc.y = v.y;
-	new_loc.z = v.z * cosa - v.x * sina;
+	new_loc.z = static_cast<float>(v.z * cosa - v.x * sina);
 	location_relative_ = new_loc;
 }
 
-void Star::Rotate_Z(float angle) {
+void Star::Rotate_Z(double angle) {
 	Rotate_Z(location_relative_, angle);
 }
 
-void Star::Rotate_Z(const Vector3<float>& v, float angle) {
-	float cosa = static_cast<float>(cos(angle));
-	float sina = static_cast<float>(sin(angle));
+void Star::Rotate_Z(const Vector3<float>& v, double angle) {
+	double cosa = cos(angle);
+	double sina = sin(angle);
 	Vector3<float> new_loc = {};
-	new_loc.x = v.x * cosa - v.y * sina;
-	new_loc.y = v.x * sina + v.y * cosa;
+	new_loc.x = static_cast<float>(v.x * cosa - v.y * sina);
+	new_loc.y = static_cast<float>(v.x * sina + v.y * cosa);
 	new_loc.z = v.z;
 	location_relative_ = new_loc;
 }

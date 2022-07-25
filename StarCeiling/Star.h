@@ -1,7 +1,6 @@
 #pragma once
 
 #include <string>
-
 #include "types.h"
 
 class Star
@@ -9,8 +8,8 @@ class Star
 
 public:
 
-	static const long MAX_MAGNITUDE = static_cast<long>(-1.5);
-	static const long MIN_MAGNITUDE = static_cast<long>(8.0);
+	static const long MAX_MAGNITUDE = static_cast<long>(-2.0);
+	static const long MIN_MAGNITUDE = static_cast<long>(8.5);
 	static const long DEFAULT_MAGNITUDE = MIN_MAGNITUDE;
 	static const long DEFAULT_B_V = static_cast<long>(0.58);
 	static const int MIN_TEMP = 1000; // kelvin
@@ -98,12 +97,12 @@ public:
 	void SetBrightness();
 	void SetColourIndex(const std::string ci);
 	void SetColourIndex(const float ci);
-	void Rotate_X(float angle);
-	void Rotate_X(const Vector3<float>& v, float angle);
-	void Rotate_Y(float angle);
-	void Rotate_Y(const Vector3<float>& v, float angle);
-	void Rotate_Z(float angle);
-	void Rotate_Z(const Vector3<float>& v, float angle);
+	void Rotate_X(double angle);
+	void Rotate_X(const Vector3<float>& v, double angle);
+	void Rotate_Y(double angle);
+	void Rotate_Y(const Vector3<float>& v, double angle);
+	void Rotate_Z(double angle);
+	void Rotate_Z(const Vector3<float>& v, double angle);
 
 	void SetID(const std::string id);
 	void SetID(const int id) {
