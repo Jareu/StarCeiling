@@ -50,6 +50,25 @@ inline float latitude = 0.f; // latitude in radians, negative is south.
 static const float EARTH_ROTATION_RATE = 20.f;
 static const RGB constellation_colour = RGB{ 255, 255, 255 };
 
+static const int max_stars_small = 315;
+static const int max_stars_medium = 270;
+static const int max_stars_large = 48;
+
+inline int num_stars_small = 0;
+inline int num_stars_medium = 0;
+inline int num_stars_large = 0;
+
+inline auto star_threshold_small = Range<float>{ 3.f, Star::MIN_MAGNITUDE };
+inline auto star_threshold_medium = Range<float>{2.f, 3.f};
+inline auto star_threshold_large = Range<float>{ Star::MAX_MAGNITUDE, 2.f }; // min to max
+
+inline std::vector <std::pair<int, float>> small_stars = {};
+inline std::vector <std::pair<int, float>> medium_stars = {};
+inline std::vector <std::pair<int, float>> large_stars = {};
+
+static const float star_radius_medium = 0.75f;
+static const float star_radius_large = 1.25f;
+
 // UI variables
 
 // -- pan
@@ -82,7 +101,7 @@ inline std::vector<std::vector<int>> segments = {};
 static const float ZERO_TOLERANCE = 0.0000001f;
 static const float _2PI = static_cast<float>(M_PI) * 2.f;
 
-inline std::map<int, std::unique_ptr<Star>> sky = {};
+inline std::map<int, std::unique_ptr<Star>> universe = {}; // all stars
 inline std::vector<std::vector<std::pair<int, int>>> constellations = {};
 
 inline SDL_Texture* star_texture = NULL;
