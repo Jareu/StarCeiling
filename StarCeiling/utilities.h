@@ -43,3 +43,4 @@ void groupStarBySize(const Star& star);
 void resetStarCount();
 inline bool sortStarsByMagnitude(const std::pair<int, float>& a, const std::pair<int, float>& b) { return (a.second < b.second); }
 void correctStarRotation(const double& angle);
+void updateScreenProperties();

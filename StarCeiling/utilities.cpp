@@ -181,3 +181,8 @@ void groupStarBySize(const Star& star) {
 		small_stars.push_back(id_magnitude);
 	}
 }
+
+void updateScreenProperties() {
+	WINDOW_WIDTH_HALF = static_cast<int> (WINDOW_WIDTH / 2);
+	WINDOW_HEIGHT_HALF = static_cast<int> (WINDOW_HEIGHT / 2);
+}

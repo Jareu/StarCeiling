@@ -33,11 +33,11 @@ inline bool bStarsChanged = false;
 inline bool bFullscreen = false;
 inline bool bLoadingStars = true;
 
-static const int WINDOW_WIDTH = 1920;
-static const int WINDOW_HEIGHT = 1080;
+inline int WINDOW_WIDTH = 1920;
+inline int WINDOW_HEIGHT = 1080;
 
-static const int WINDOW_WIDTH_HALF = static_cast<int> (WINDOW_WIDTH / 2);
-static const int WINDOW_HEIGHT_HALF = static_cast<int> (WINDOW_HEIGHT / 2);
+inline int WINDOW_WIDTH_HALF = static_cast<int> (WINDOW_WIDTH / 2);
+inline int WINDOW_HEIGHT_HALF = static_cast<int> (WINDOW_HEIGHT / 2);
 
 static const uint8_t FONT_SIZE_SMALL = 16;
 static const uint8_t FONT_SIZE_MEDIUM = 22;

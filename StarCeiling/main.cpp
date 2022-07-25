@@ -52,16 +52,6 @@ void calculateCeilingSize() {
 	segment_size = ceiling_size.x / ceiling_x;
 }
 
-/*
-	Updates ceiling_offset based on window size. Should be called when window resizes.
-*/
-void calculateCeilingOffset() {
-	if (WINDOW_WIDTH > WINDOW_HEIGHT) {
-	}
-	else {
-	}
-}
-
 int main() {
 	int SDL_RENDERER_FLAGS = 0;
 	int SDL_WINDOW_INDEX = -1;
@@ -76,7 +66,7 @@ int main() {
 	SDL_WINDOW_FLAGS = SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
 
 	if (bFullscreen) {
-		SDL_WINDOW_FLAGS = SDL_WINDOW_FLAGS | SDL_WINDOW_FULLSCREEN;
+		SDL_WINDOW_FLAGS = SDL_WINDOW_FLAGS | SDL_WINDOW_FULLSCREEN_DESKTOP;
 	}
 
 	// Initialize SDL
@@ -106,7 +96,7 @@ int main() {
 	}
 
 	// Create Window
-	Environment::window = SDL_CreateWindow("Test Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WINDOW_WIDTH, WINDOW_HEIGHT, SDL_WINDOW_FLAGS);
+	Environment::window = SDL_CreateWindow("Test Window", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 0, 0, SDL_WINDOW_FLAGS);
 	if (!Environment::window) {
 		std::cout << "Failed to create window: " << SDL_GetError() << "\n";
 		return EXIT_FAILURE;
@@ -114,6 +104,7 @@ int main() {
 
 	// set window size
 	SDL_SetWindowMinimumSize(Environment::window, 100, 100);
+	SDL_GetWindowSize(Environment::window, &WINDOW_WIDTH, &WINDOW_HEIGHT);
 
 	// Create Renderer
 	Environment::renderer = SDL_CreateRenderer(Environment::window, SDL_WINDOW_INDEX, SDL_RENDERER_FLAGS);
