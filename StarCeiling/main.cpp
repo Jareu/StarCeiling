@@ -141,27 +141,12 @@ int main() {
 	render();
 
 	// load stars
-	readCSV("star_data.csv", true);
-	// ReadCSV("star_data_large.csv", true);
+	//readCSV("star_data.csv", true);
+	readCSV("star_data_large.csv", true);
+
 	bLoadingStars = false;
-
-	// rotate stars by 90 degrees
-	auto sky_it = sky.begin();
-	while (sky_it != sky.end())
-	{
-		// get value from star
-		auto& star = sky_it->second;
-
-		if (star) {
-			// rotate around Y axis by time of day, then rotate about X axis by latitude
-			Vector3 new_loc = star->GetAbsoluteLocation();
-			star->Rotate_X(static_cast<float>(-M_PI_2));
-			star->SetAbsoluteLocation(star->GetLocation());
-		}
-
-		sky_it++;
-	}
-
+	
+	correctStarRotation(-M_PI_2);
 
 	/*
 	// create star texture
@@ -213,11 +198,11 @@ void update() {
 	// do things
 	if (EARTH_ROTATION_RATE > 0) {
 		increment_time(EARTH_ROTATION_RATE);
-		auto sky_it = sky.begin();
-		while (sky_it != sky.end())
+		auto universe_i = universe.begin();
+		while (universe_i != universe.end())
 		{
 			// get value from star
-			auto& star = sky_it->second;
+			auto& star = universe_i->second;
 
 			if (star) {
 				// rotate around Y axis by time of day, then rotate about X axis by latitude
@@ -227,7 +212,7 @@ void update() {
 				star->UpdateTransforms();
 			}
 
-			sky_it++;
+			universe_i++;
 		}
 
 		bStarsChanged = true;
@@ -429,11 +414,18 @@ void readCSV(std::string filename, bool has_header) {
 
 		// move star into sky
 		if (star->GetMagnitude() < Star::MIN_MAGNITUDE) {
-			sky.insert(std::pair<int, std::unique_ptr<Star>>(star->GetID(), std::move(star)));
+			groupStarBySize(*star);
+			universe.insert(std::pair<int, std::unique_ptr<Star>>( star->GetID(), std::move(star)) );
 		}
 	}
 
 	file.close();
 
-	std::cout << "Successfully read " << sky.size() << " stars.\n";
+	std::cout << "Successfully read " << universe.size() << " stars.\n";
+
+	// sort by star magnitudes
+	std::cout << "Sorting stars by magnitude ... ";
+	sortStars();
+	std::cout << "done.\n";
+
 }
