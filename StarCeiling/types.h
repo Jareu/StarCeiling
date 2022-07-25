@@ -95,6 +95,17 @@ public:
 	}
 };
 
+
+template <typename T>
+class Range {
+public:
+	T min = 0;
+	T max = 0;
+
+	Range() = default;
+	Range(T min, T max) : min{ min }, max{ max } {};
+};
+
 struct RGB {
 	uint8_t R = 0;
 	uint8_t G = 0;
@@ -120,4 +131,12 @@ enum class eFontSize {
 	MEDIUM,
 	LARGE,
 	TITLE
+};
+
+// stars
+enum class StarSize {
+	NONE,
+	SMALL,
+	MEDIUM,
+	LARGE
 };
