@@ -188,68 +188,84 @@ void renderCircle(const Vector2<int> center, float radius, const RGB& color, uns
 	}
 }
 
-void drawStars() {
-	if (!star_texture) {
-		star_texture = SDL_CreateTexture(Environment::renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, ceiling_size.x, ceiling_size.y);
-		if (!star_texture) {
-			std::cout << "Error creating star texture: " << SDL_GetError() << "\n";
-			return;
-		}
-	}
-	
-	// draw to the texture
-	SDL_SetRenderTarget(Environment::renderer, star_texture);
-
-	// fill surface with black
-	SDL_SetRenderDrawColor(Environment::renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
-	SDL_RenderFillRect(Environment::renderer, NULL);
-
+// TODO: rather than use raw pointers, this could be handled elegantly with a star group class
+void drawStarGroup(StarSize group_size) {
 	float screen_coefficient = static_cast<float>(std::min(WINDOW_WIDTH, WINDOW_HEIGHT) * window_scale * zoom);
 
-	// empty segment collections
-	
+	std::vector<std::pair<int, float>>* star_group = nullptr;
+	int* star_num = nullptr;
+	const int* star_num_max = nullptr;
 
-	// draw the star
-	auto sky_it = sky.begin();
-	while (sky_it != sky.end())
-	{
-		// get value from star
-		auto& star = sky_it->second;
-
-		if (star) {
-			// Color
-			const uint8_t brightness = star->GetBrightness();
-			SDL_SetRenderDrawColor(Environment::renderer, star->GetColour().R, star->GetColour().G, star->GetColour().B, brightness);
-
-			// Screen Coordinates
-			const Vector2 screen_coords = getScreenCoords(screen_coefficient, star->GetScreenCoords()) + window_offset;
-
-			// Only draw star if it is on screen
-			// if (screencoordsInBounds(screen_coords, star->GetZ())) {
-			if (true) {
-				if (star->GetMagnitude() < 2.f) {
-					renderCircle(screen_coords, 0.75f, star->GetColour(), 4);
-				}
-				else {
-					SDL_RenderDrawPoint(Environment::renderer, static_cast<int>(round(screen_coords.x)), static_cast<int>(round(screen_coords.y)));
-				}
-
-				if (star->GetName() == "Polaris") {
-					renderCircle(screen_coords, 2.f, star->GetColour(), 4);
-				}
-			}
-		}
-
-		sky_it++;
+	switch (group_size) {
+	case StarSize::SMALL:
+		star_group = &small_stars;
+		star_num = &num_stars_small;
+		star_num_max = &max_stars_small;
+		break;
+	case StarSize::MEDIUM:
+		star_group = &medium_stars;
+		star_num = &num_stars_medium;
+		star_num_max = &max_stars_medium;
+		break;
+	case StarSize::LARGE:
+		star_group = &large_stars;
+		star_num = &num_stars_large;
+		star_num_max = &max_stars_large;
+		break;
+	case StarSize::NONE:
+	default:
+		
+		break;
 	}
 
-	// Draw constellations
+	// check for nullptr
+	if (!star_group || !star_num || !star_num_max) return;
+
+	for (const auto& star_ref : *star_group) {
+		int star_id = star_ref.first;
+		auto star_result = universe.find(star_id);
+
+		// check that the star exists
+		if (star_result == universe.end()) continue;
+		const auto& star = star_result->second;
+
+		// Screen Coordinates
+		const Vector2 screen_coords = getScreenCoords(screen_coefficient, star->GetScreenCoords()) + window_offset;
+
+		// Check that the star fits on the screen
+		if (!screencoordsInBounds(screen_coords, star->GetZ())) continue;
+
+		// Check that the max hasn't been reached
+		//if (*star_num >= *star_num_max) continue;
+
+		// Color
+		const uint8_t brightness = star->GetBrightness();
+		SDL_SetRenderDrawColor(Environment::renderer, star->GetColour().R, star->GetColour().G, star->GetColour().B, brightness);
+
+		// if the star is bright enough, draw a larger dot
+		switch (group_size) {
+		case StarSize::MEDIUM:
+			renderCircle(screen_coords, star_radius_medium, star->GetColour(), 4);
+			break;
+		case StarSize::LARGE:
+			renderCircle(screen_coords, star_radius_large, star->GetColour(), 4);
+			break;
+		default:
+			SDL_RenderDrawPoint(Environment::renderer, screen_coords.x, screen_coords.y);
+		}
+
+		*star_num++;
+	}
+}
+
+void drawConstellations() {
+	float screen_coefficient = static_cast<float>(std::min(WINDOW_WIDTH, WINDOW_HEIGHT) * window_scale * zoom);
 	SDL_SetRenderDrawColor(Environment::renderer, constellation_colour.R, constellation_colour.G, constellation_colour.B, 35);
 
 	for (auto& constellation : constellations) {
 		for (auto& star_pair : constellation) {
-			auto& star_a = sky.find(star_pair.first)->second;
-			auto& star_b = sky.find(star_pair.second)->second;
+			auto& star_a = universe.find(star_pair.first)->second;
+			auto& star_b = universe.find(star_pair.second)->second;
 			if (star_a && star_b) {
 				// Screen Coordinates
 				const Vector2<int> screen_coords_a = getScreenCoords(screen_coefficient, star_a->GetScreenCoords()) + window_offset;
@@ -272,4 +288,32 @@ void drawStars() {
 			}
 		}
 	}
+}
+
+void drawStars() {
+	if (!star_texture) {
+		star_texture = SDL_CreateTexture(Environment::renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, ceiling_size.x, ceiling_size.y);
+		if (!star_texture) {
+			std::cout << "Error creating star texture: " << SDL_GetError() << "\n";
+			return;
+		}
+	}
+	
+	// draw to the texture
+	SDL_SetRenderTarget(Environment::renderer, star_texture);
+
+	// fill surface with black
+	SDL_SetRenderDrawColor(Environment::renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
+	SDL_RenderFillRect(Environment::renderer, NULL);
+
+	// empty segment collections
+	resetStarCount();
+
+	// draw stars
+	drawStarGroup(StarSize::LARGE);
+	drawStarGroup(StarSize::MEDIUM);
+	drawStarGroup(StarSize::SMALL);
+
+	// Draw constellations
+	drawConstellations();
 }

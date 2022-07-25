@@ -9,4 +9,6 @@ bool renderLine(const Vector2<float> start, const Vector2<float> end, const RGB&
 bool renderLine(const Vector2<int> start, const Vector2<int> end, const RGB& color);
 bool renderRect(const Vector2<int> start, const Vector2<int> end, const RGB& color);
 bool renderRect(const Vector2<int> start, const Vector2<int> end, const RGBA& color);
+void drawStarGroup(StarSize group_size);
+void drawConstellations();
 void drawStars();
