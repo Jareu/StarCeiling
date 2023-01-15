@@ -9,7 +9,7 @@ class Star
 public:
 
 	static const long MAX_MAGNITUDE = static_cast<long>(-2.0);
-	static const long MIN_MAGNITUDE = static_cast<long>(8.5);
+	static const long MIN_MAGNITUDE = static_cast<long>(10.0);
 	static const long DEFAULT_MAGNITUDE = MIN_MAGNITUDE;
 	static const long DEFAULT_B_V = static_cast<long>(0.58);
 	static const int MIN_TEMP = 1000; // kelvin
