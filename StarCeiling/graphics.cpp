@@ -4,14 +4,17 @@
 #include <memory>
 #include <iostream>
 
+#include "types.h"
 #include "globals.h"
 #include "utilities.h"
 #include "graphics.h"
 #include "star.h"
 
-SDL_Texture* renderText(const std::string& text, eFontSize size, uint16_t x, uint16_t y, bool center) {
-	if (!Environment::bFontLoaded) return nullptr; // in case fonts didn't load
+Vector2<int> renderText(const std::string& text, eFontSize size, uint16_t x, uint16_t y, bool center) {
+	Vector2<int> return_size = { 0, 0 };
+	if (!Environment::bFontLoaded) return return_size; // in case fonts didn't load
 
+	SDL_SetRenderTarget(Environment::renderer, NULL); // NULL: render to the window
 	SDL_Texture* font_texture = nullptr;
 	SDL_Color foreground = { 128, 128, 200 };
 
@@ -43,17 +46,19 @@ SDL_Texture* renderText(const std::string& text, eFontSize size, uint16_t x, uin
 
 		if (!text_surf) {
 			std::cout << "Failed to render TTF font: " << SDL_GetError() << "\n";
-			return nullptr;
+			return return_size;
 		}
 
 		font_texture = SDL_CreateTextureFromSurface(Environment::renderer, text_surf);
 		if (!font_texture) {
 			SDL_FreeSurface(text_surf);
 			std::cout << "Failed to texture for TTF font: " << SDL_GetError() << "\n";
-			return nullptr;
+			return return_size;
 		}
 
 		SDL_Rect dest = SDL_Rect{ x, y, text_surf->w, text_surf->h };
+		return_size.x = text_surf->w;
+		return_size.y = text_surf->h;
 		if (center) dest.x -= static_cast<int>(text_surf->w / 2.0f); // centered
 		SDL_RenderCopy(Environment::renderer, font_texture, NULL, &dest);
 
@@ -61,26 +66,67 @@ SDL_Texture* renderText(const std::string& text, eFontSize size, uint16_t x, uin
 		SDL_FreeSurface(text_surf);
 	}
 
-	return font_texture;
+	return return_size;
 }
 
-bool renderRect(const Vector2<int> start, const Vector2<int> end, const RGB& color) {
-	return renderRect(start, end, RGBA{ color.R, color.G, color.B, SDL_ALPHA_OPAQUE });
+bool renderRect(const Vector2<int> start, const Vector2<int> size, const RGB& color) {
+	return renderRect(start, size, RGBA{ color.R, color.G, color.B, SDL_ALPHA_OPAQUE });
 }
 
-bool renderRect(const Vector2<int> start, const Vector2<int> end, const RGBA& color) {
+bool renderRect(const Vector2<int> start, const Vector2<int> size, const RGBA& color) {
 	// Draw a rectangle
 	//---
 
-	SDL_Rect rect = SDL_Rect{ start.x, start.y, end.x, end.y };
+	SDL_Rect rect = SDL_Rect{ start.x, start.y, size.x, size.y };
 
 	// store current colour
 	RGBA current_color{};
 	SDL_GetRenderDrawColor(Environment::renderer, &current_color.R, &current_color.G, &current_color.B, &current_color.A);
+
 	// set given colour
 	SDL_SetRenderDrawColor(Environment::renderer, color.R, color.G, color.B, color.A);
+
 	// draw
 	int ret = SDL_RenderDrawRect(Environment::renderer, &rect);
+
+	// restore original colour
+	SDL_SetRenderDrawColor(Environment::renderer, current_color.R, current_color.G, current_color.B, current_color.A);
+
+	// error handling
+	if (ret != 0)
+	{
+		const char* error = SDL_GetError();
+		if (*error != '\0')
+		{
+			SDL_LogError(SDL_LOG_CATEGORY_APPLICATION, "Could not renderRect. SDL Error: %s at line #%d of file %s/n", error, __LINE__, __FILE__);
+			SDL_ClearError();
+		}
+		return false;
+	}
+
+	return true;
+}
+
+bool renderFillRect(const Vector2<int> start, const Vector2<int> size, const RGB& color) {
+	return renderFillRect(start, size, RGBA{ color.R, color.G, color.B, SDL_ALPHA_OPAQUE });
+}
+
+bool renderFillRect(const Vector2<int> start, const Vector2<int> size, const RGBA& color) {
+	// Draw a rectangle
+	//---
+
+	SDL_Rect rect = SDL_Rect{ start.x, start.y, size.x, size.y };
+
+	// store current colour
+	RGBA current_color{};
+	SDL_GetRenderDrawColor(Environment::renderer, &current_color.R, &current_color.G, &current_color.B, &current_color.A);
+
+	// set given colour
+	SDL_SetRenderDrawColor(Environment::renderer, color.R, color.G, color.B, color.A);
+
+	// draw
+	int ret = SDL_RenderFillRect(Environment::renderer, &rect);
+
 	// restore original colour
 	SDL_SetRenderDrawColor(Environment::renderer, current_color.R, current_color.G, current_color.B, current_color.A);
 
@@ -172,7 +218,8 @@ void renderCircle(const Vector2<int> center, float radius, const RGB& color, uns
 	float d_a = _2PI / sides,
 		angle = d_a;
 
-	Vector2<int> start, end;
+	Vector2<int> start{ 0, 0 };
+	Vector2<int> end{ 0 , 0 };
 	end.x = static_cast<long>(radius);
 	end.y = static_cast<long>(0.0);
 	end = end + center;
@@ -188,82 +235,11 @@ void renderCircle(const Vector2<int> center, float radius, const RGB& color, uns
 	}
 }
 
-// TODO: rather than use raw pointers, this could be handled elegantly with a star group class
-void drawStarGroup(StarSize group_size) {
-	float screen_coefficient = static_cast<float>(std::min(WINDOW_WIDTH, WINDOW_HEIGHT) * window_scale * zoom);
-
-	std::vector<std::pair<int, float>>* star_group = nullptr;
-	int* star_num = nullptr;
-	const int* star_num_max = nullptr;
-
-	switch (group_size) {
-	case StarSize::SMALL:
-		star_group = &small_stars;
-		star_num = &num_stars_small;
-		star_num_max = &max_stars_small;
-		break;
-	case StarSize::MEDIUM:
-		star_group = &medium_stars;
-		star_num = &num_stars_medium;
-		star_num_max = &max_stars_medium;
-		break;
-	case StarSize::LARGE:
-		star_group = &large_stars;
-		star_num = &num_stars_large;
-		star_num_max = &max_stars_large;
-		break;
-	case StarSize::NONE:
-	default:
-		
-		break;
-	}
-
-	// check for nullptr
-	if (!star_group || !star_num || !star_num_max) return;
-
-	for (const auto& star_ref : *star_group) {
-		int star_id = star_ref.first;
-		auto star_result = universe.find(star_id);
-
-		// check that the star exists
-		if (star_result == universe.end()) continue;
-		const auto& star = star_result->second;
-
-		// Screen Coordinates
-		const Vector2 screen_coords = getScreenCoords(screen_coefficient, star->GetScreenCoords()) + window_offset;
-
-		// Check that the star fits on the screen
-		if (!screencoordsInBounds(screen_coords, star->GetZ())) continue;
-
-		// Check that the max hasn't been reached
-		//if (*star_num >= *star_num_max) continue;
-
-		// Color
-		const uint8_t brightness = star->GetBrightness();
-		SDL_SetRenderDrawColor(Environment::renderer, star->GetColour().R, star->GetColour().G, star->GetColour().B, brightness);
-
-		// if the star is bright enough, draw a larger dot
-		switch (group_size) {
-		case StarSize::MEDIUM:
-			renderCircle(screen_coords, star_radius_medium, star->GetColour(), 4);
-			break;
-		case StarSize::LARGE:
-			renderCircle(screen_coords, star_radius_large, star->GetColour(), 4);
-			break;
-		default:
-			SDL_RenderDrawPoint(Environment::renderer, screen_coords.x, screen_coords.y);
-		}
-
-		*star_num++;
-	}
-}
-
 void drawConstellations() {
-	float screen_coefficient = static_cast<float>(std::min(WINDOW_WIDTH, WINDOW_HEIGHT) * window_scale * zoom);
 	SDL_SetRenderDrawColor(Environment::renderer, constellation_colour.R, constellation_colour.G, constellation_colour.B, 35);
 
-	for (auto& constellation : constellations) {
-		for (auto& star_pair : constellation) {
+	for (const auto& constellation : constellations) {
+		for (const auto& star_pair : constellation) {
 			auto& star_a = universe.find(star_pair.first)->second;
 			auto& star_b = universe.find(star_pair.second)->second;
 			if (star_a && star_b) {
@@ -291,10 +267,13 @@ void drawConstellations() {
 }
 
 void drawStars() {
+	SDL_Texture* target = SDL_GetRenderTarget(Environment::renderer);
+
 	if (!star_texture) {
 		star_texture = SDL_CreateTexture(Environment::renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_TARGET, ceiling_size.x, ceiling_size.y);
 		if (!star_texture) {
 			std::cout << "Error creating star texture: " << SDL_GetError() << "\n";
+			SDL_SetRenderTarget(Environment::renderer, target);
 			return;
 		}
 	}
@@ -306,14 +285,78 @@ void drawStars() {
 	SDL_SetRenderDrawColor(Environment::renderer, 0, 0, 0, SDL_ALPHA_OPAQUE);
 	SDL_RenderFillRect(Environment::renderer, NULL);
 
-	// empty segment collections
+	// empty collections
 	resetStarCount();
+	clearSegments();
 
 	// draw stars
-	drawStarGroup(StarSize::LARGE);
-	drawStarGroup(StarSize::MEDIUM);
-	drawStarGroup(StarSize::SMALL);
+	screen_coefficient = static_cast<float>(std::min(WINDOW_WIDTH, WINDOW_HEIGHT) * window_scale * zoom);
+
+	StarSize group_size = StarSize::LARGE;
+	for (const auto& star_id : stars_by_magnitude) {
+
+		// check if all stars have been drawn
+		if (group_size == StarSize::NONE) {
+			break;
+		}
+
+		// lookup star by ID
+		auto star_result = universe.find(star_id.first);
+
+		// check that the star exists
+		if (star_result == universe.end()) continue;
+		const auto& star = star_result->second;
+
+		// Screen Coordinates
+		const Vector2 screen_coords = getScreenCoords(screen_coefficient, star->GetScreenCoords()) + window_offset;
+
+		// Check that the star fits on the screen
+		if (!screencoordsInBounds(screen_coords, star->GetZ())) continue;
+
+		// Check that the max hasn't been reached
+		switch (group_size) {
+		case StarSize::LARGE:
+			if (num_stars_large >= max_stars_large) {
+				group_size = StarSize::MEDIUM;
+			}
+			break;
+		case StarSize::MEDIUM:
+			if (num_stars_medium >= max_stars_medium) {
+				group_size = StarSize::SMALL;
+			}
+			break;
+
+		case StarSize::SMALL:
+			if (num_stars_small >= max_stars_small) {
+				group_size = StarSize::NONE;
+				continue;
+			}
+			break;
+		}
+
+		updateSegment(star->GetID(), (star->GetScreenCoords() + window_offset) * screen_coefficient, group_size);
+
+		// Color
+		const uint8_t brightness = star->GetBrightness();
+		SDL_SetRenderDrawColor(Environment::renderer, star->GetColour().R, star->GetColour().G, star->GetColour().B, brightness);
+
+		// if the star is bright enough, draw a larger dot
+		switch (group_size) {
+		case StarSize::LARGE:
+			renderCircle(screen_coords, star_radius_large, star->GetColour(), 4);
+			num_stars_large++;
+			break;
+		case StarSize::MEDIUM:
+			renderCircle(screen_coords, star_radius_medium, star->GetColour(), 4);
+			num_stars_medium++;
+			break;
+		case StarSize::SMALL:
+			SDL_RenderDrawPoint(Environment::renderer, screen_coords.x, screen_coords.y);
+			num_stars_small++;
+		}
+	}
 
 	// Draw constellations
 	drawConstellations();
+	SDL_SetRenderTarget(Environment::renderer, target);
 }
