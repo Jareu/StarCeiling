@@ -44,7 +44,7 @@ void Star::Rotate_X(double angle) {
 void Star::Rotate_X(const Vector3<float>& v, double angle) {
 	double cosa = cos(angle);
 	double sina = sin(angle);
-	Vector3<float> new_loc = {};
+	Vector3<float> new_loc = { 0.f, 0.f, 0.f };
 	new_loc.x = v.x;
 	new_loc.y = static_cast<float>(v.y * cosa - v.z * sina);
 	new_loc.z = static_cast<float>(v.y * sina + v.z * cosa);
@@ -58,7 +58,7 @@ void Star::Rotate_Y(double angle) {
 void Star::Rotate_Y(const Vector3<float>& v, double angle) {
 	double cosa = cos(angle);
 	double sina = sin(angle);
-	Vector3<float> new_loc = {};
+	Vector3<float> new_loc = { 0.f, 0.f, 0.f };
 	new_loc.x = static_cast<float>(v.x * cosa + v.z * sina);
 	new_loc.y = v.y;
 	new_loc.z = static_cast<float>(v.z * cosa - v.x * sina);
@@ -72,7 +72,7 @@ void Star::Rotate_Z(double angle) {
 void Star::Rotate_Z(const Vector3<float>& v, double angle) {
 	double cosa = cos(angle);
 	double sina = sin(angle);
-	Vector3<float> new_loc = {};
+	Vector3<float> new_loc = { 0.f, 0.f, 0.f };
 	new_loc.x = static_cast<float>(v.x * cosa - v.y * sina);
 	new_loc.y = static_cast<float>(v.x * sina + v.y * cosa);
 	new_loc.z = v.z;
