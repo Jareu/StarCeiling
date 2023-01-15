@@ -16,8 +16,8 @@
 bool screencoordsInBounds(Vector2<int> screen_coords, float Z) {
 	bool x_in_bounds = screen_coords.x > 0 && screen_coords.x < ceiling_size.x;
 	bool y_in_bounds = screen_coords.y > 0 && screen_coords.y < ceiling_size.y;
-	//bool z_in_bounds = Z > 0.f;
-	bool z_in_bounds = true;
+	bool z_in_bounds = Z > 0.f;
+	//bool z_in_bounds = true;
 	return (x_in_bounds && y_in_bounds && z_in_bounds);
 }
 
@@ -151,38 +151,26 @@ void correctStarRotation(const double& angle) {
 	}
 }
 
-/*
-	Sorts small, medium, and large groups of stars each by magnitude.
-*/
-void sortStars() {
-	std::sort(small_stars.begin(), small_stars.end(), sortStarsByMagnitude);
-	std::sort(medium_stars.begin(), medium_stars.end(), sortStarsByMagnitude);
-	std::sort(large_stars.begin(), large_stars.end(), sortStarsByMagnitude);
-}
-
-/*
-	Applies star magnitude thresholds to split stars up into groups of small, medium, and large
-*/
-void groupStarBySize(const Star& star) {
-	// get star's ID and magnitude
-	auto id_magnitude = std::pair<int, float>{ star.GetID(), star.GetMagnitude()};
-
-	// figure out where to put it
-	if (star.GetMagnitude() >= star_threshold_large.min && star.GetMagnitude() < star_threshold_large.max) {
-		// Large
-		large_stars.push_back(id_magnitude);
-	}
-	else if (star.GetMagnitude() >= star_threshold_medium.min && star.GetMagnitude() < star_threshold_medium.max) {
-		// Medium
-		medium_stars.push_back(id_magnitude);
-	}
-	else if (star.GetMagnitude() >= star_threshold_small.min && star.GetMagnitude() < star_threshold_small.max) {
-		// Small
-		small_stars.push_back(id_magnitude);
-	}
-}
-
 void updateScreenProperties() {
 	WINDOW_WIDTH_HALF = static_cast<int> (WINDOW_WIDTH / 2);
 	WINDOW_HEIGHT_HALF = static_cast<int> (WINDOW_HEIGHT / 2);
+}
+
+void clearSegments() {
+	for (auto& it : segments) {
+		it.second->ClearStars();
+	}
+}
+
+void updateSegment(int id, Vector2<float> screen_coords, StarSize size) {
+	// get x and y coords of the segment
+	int segment_x = static_cast<int> (std::clamp(screen_coords.x * static_cast<float>(ceiling_x), 0.f, static_cast<float>(ceiling_x)));
+	int segment_y = static_cast<int> (std::clamp(screen_coords.y * static_cast<float>(ceiling_y), 0.f, static_cast<float>(ceiling_y)));
+	int segment_id = segment_y * ceiling_x + segment_x + 1;
+
+	// get x and y coords within the segment
+	float x = fmod(screen_coords.x, 1.f / ceiling_x);
+	float y = fmod(screen_coords.y, 1.f / ceiling_y);
+
+
 }

@@ -38,9 +38,9 @@ void updateZoom();
 Vector2<int> getScreenCoords(const float scalar, const Vector2<float>& coords_n);
 bool fequals_zero(const float& f);
 void increment_time(const float delta_seconds);
-void sortStars();
-void groupStarBySize(const Star& star);
 void resetStarCount();
 inline bool sortStarsByMagnitude(const std::pair<int, float>& a, const std::pair<int, float>& b) { return (a.second < b.second); }
 void correctStarRotation(const double& angle);
 void updateScreenProperties();
+void updateSegment(int id, Vector2<float> screen_coords, StarSize size);
+void clearSegments();
