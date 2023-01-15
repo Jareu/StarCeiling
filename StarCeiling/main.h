@@ -9,6 +9,8 @@ int main();
 void handleEvents();
 void handleUserInput();
 void update();
+void renderInfo();
+void renderGenerateButton();
 void render();
 void readCSV(std::string filename, bool has_header = true);
 void calculateCeilingSize();

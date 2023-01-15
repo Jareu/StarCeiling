@@ -35,7 +35,7 @@ void calculateCeilingSize() {
 	if (ceiling_aspect > screen_aspect) {
 		// ceiling size
 		ceiling_size.x = WINDOW_WIDTH - margin * 2;
-		ceiling_size.y = ceiling_size.x * ceiling_y / static_cast<float>(ceiling_x);
+		ceiling_size.y = static_cast<int>(ceiling_size.x * ceiling_y / static_cast<float>(ceiling_x));
 		// offset
 		ceiling_offset.x = margin;
 		ceiling_offset.y = static_cast<int>(std::round((WINDOW_HEIGHT - ceiling_size.y) / 2.0));
@@ -43,7 +43,7 @@ void calculateCeilingSize() {
 	else {
 		// ceiling size
 		ceiling_size.y = WINDOW_HEIGHT - margin * 2;
-		ceiling_size.x = ceiling_size.y * ceiling_x / static_cast<float>(ceiling_y);
+		ceiling_size.x = static_cast<int>(ceiling_size.y * ceiling_x / static_cast<float>(ceiling_y));
 		// offset
 		ceiling_offset.x = static_cast<int>(std::round((WINDOW_WIDTH - ceiling_size.x) / 2.0));
 		ceiling_offset.y = margin;
@@ -61,6 +61,15 @@ int main() {
 	updateZoom(); // set initial zoom values 
 
 	populateConstellations();
+
+	// set up segments:
+	int id = 1;
+	for (int y = 1; y <= ceiling_y; y++) {
+		for (int x = 1; x <= ceiling_x; x++) {
+			segments.insert({ id, std::make_unique<Segment>(id, Vector2<int> {x, y}) });
+			id++;
+		}
+	}
 
 	int SDL_WINDOW_FLAGS = 0;
 	SDL_WINDOW_FLAGS = SDL_WINDOW_RESIZABLE | SDL_WINDOW_MAXIMIZED;
@@ -132,30 +141,16 @@ int main() {
 	render();
 
 	// load stars
-	//readCSV("star_data.csv", true);
 	readCSV("star_data_large.csv", true);
 
 	bLoadingStars = false;
 	
 	correctStarRotation(-M_PI_2);
-
-	/*
-	// create star texture
-	uint64_t t_before = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-	star_texture = drawStars();
-	uint64_t t_after = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
-	uint64_t search_time = (t_after - t_before);
-	std::cout << "Star draw time: " << search_time << " microseconds \n";
-	SDL_SetRenderTarget(Environment::renderer, NULL);
-	SDL_RenderCopy(Environment::renderer, star_texture, NULL, &star_rect);
-	SDL_RenderPresent(Environment::renderer);
-	*/
-
 	
 	while (bIsRunning) {
 		handleEvents();
 		handleUserInput();
-		//update();
+		update();
 		//if (bStarsChanged) {
 		render();
 		//	bStarsChanged = false;
@@ -186,8 +181,8 @@ int main() {
 }
 
 void update() {
-	// do things
-	if (EARTH_ROTATION_RATE > 0) {
+	// rotate stars
+	if (EARTH_ROTATION_RATE > 0 && bRotateStars) {
 		increment_time(EARTH_ROTATION_RATE);
 		auto universe_i = universe.begin();
 		while (universe_i != universe.end())
@@ -210,6 +205,38 @@ void update() {
 	}
 }
 
+void renderInfo() {
+	int text_x = 20;
+	int text_y = 20;
+	text_x += renderText("Large:", eFontSize::SMALL, text_x, text_y, false).x + 10;
+	text_x += renderText(std::to_string(num_stars_large), eFontSize::SMALL, text_x, text_y, false).x + 4;
+	text_x += renderText("/", eFontSize::SMALL, text_x, text_y, false).x + 4;
+	text_x += renderText(std::to_string(max_stars_large), eFontSize::SMALL, text_x, text_y, false).x;
+
+	text_x = 20;
+	text_y += 20;
+	text_x += renderText("Medium:", eFontSize::SMALL, text_x, text_y, false).x + 10;
+	text_x += renderText(std::to_string(num_stars_medium), eFontSize::SMALL, text_x, text_y, false).x + 4;
+	text_x += renderText("/", eFontSize::SMALL, text_x, text_y, false).x + 4;
+	text_x += renderText(std::to_string(max_stars_medium), eFontSize::SMALL, text_x, text_y, false).x;
+
+	text_x = 20;
+	text_y += 20;
+	text_x += renderText("Small:", eFontSize::SMALL, text_x, text_y, false).x + 10;
+	text_x += renderText(std::to_string(num_stars_small), eFontSize::SMALL, text_x, text_y, false).x + 4;
+	text_x += renderText("/", eFontSize::SMALL, text_x, text_y, false).x + 4;
+	text_x += renderText(std::to_string(max_stars_small), eFontSize::SMALL, text_x, text_y, false).x;
+}
+
+void renderGenerateButton() {
+	renderFillRect(button_pos, button_size, (bIsCursorOverButton ? button_bg_hover : button_bg));
+	renderLine(button_pos, Vector2{ button_pos.x + button_size.x, button_pos.y }, button_border);
+	renderLine(Vector2{ button_pos.x, button_pos.y + button_size.y }, button_pos + button_size, button_border);
+	renderLine(button_pos, Vector2{ button_pos.x, button_pos.y + button_size.y }, button_border);
+	renderLine(Vector2{ button_pos.x + button_size.x, button_pos.y }, button_pos + button_size, button_border);
+	renderText("GENERATE", eFontSize::SMALL, button_pos.x + button_size.x / 2, button_pos.y + 6, true);
+}
+
 // Render the Game
 void render() {
 	if (!bIsActive) return;
@@ -218,12 +245,13 @@ void render() {
 	SDL_RenderClear(Environment::renderer);
 
 	if (bLoadingStars) {
-		ui_texture = renderText("LOADING...", eFontSize::TITLE, WINDOW_WIDTH_HALF, WINDOW_HEIGHT_HALF - 30, true);
+		renderText("LOADING...", eFontSize::TITLE, WINDOW_WIDTH_HALF, WINDOW_HEIGHT_HALF - 30, true);
 	}
 	else {
 		drawStars();
 
 		// draw border
+		SDL_SetRenderTarget(Environment::renderer, star_texture);
 		renderRect(Vector2{ 0, 0 }, ceiling_size, RGBA{ 128, 128, 200, 128 });
 
 		// draw segments
@@ -234,12 +262,12 @@ void render() {
 			renderLine(Vector2{ 0, y }, Vector2{ ceiling_size.x, y }, RGB{ 100, 100, 160 });
 		}
 
-		ui_texture = renderText("Testing", eFontSize::SMALL, 20, 20, false);
+		renderInfo();
+		renderGenerateButton();
+
 	}
 
-	SDL_SetRenderTarget(Environment::renderer, NULL); // NULL: render to the window
 	SDL_RenderCopy(Environment::renderer, star_texture, NULL, &star_rect);
-	SDL_RenderCopy(Environment::renderer, ui_texture, NULL, NULL);
 	SDL_RenderPresent(Environment::renderer);
 }
 
@@ -254,16 +282,19 @@ void handleEvents() {
 			bIsRunning = false;
 			break;
 		case SDL_MOUSEWHEEL:
-			if (event.wheel.y < 0) {
-				// zoom in
-				zoom_steps = std::clamp(++zoom_steps, MIN_ZOOM, MAX_ZOOM);
-			}
-			else if (event.wheel.y > 0) {
-				// zoom out
-				zoom_steps = std::clamp(--zoom_steps, MIN_ZOOM, MAX_ZOOM);
+			if (bIsCursorInSky) {
+				if (event.wheel.y < 0) {
+					// zoom in
+					zoom_steps = std::clamp(++zoom_steps, MIN_ZOOM, MAX_ZOOM);
+				}
+				else if (event.wheel.y > 0) {
+					// zoom out
+					zoom_steps = std::clamp(--zoom_steps, MIN_ZOOM, MAX_ZOOM);
+				}
+
+				updateZoom();
 			}
 
-			updateZoom();
 			break;
 		case SDL_WINDOWEVENT:
 			switch(event.window.event) {
@@ -295,17 +326,25 @@ void handleUserInput()
 	// get mouse position and button states
 	Uint32 mouse_buttons = SDL_GetMouseState(&cursor_pos.x, &cursor_pos.y);
 
+	bIsCursorInSky = (cursor_pos.x > ceiling_offset.x && cursor_pos.x < ceiling_size.x + ceiling_offset.x
+				   && cursor_pos.y > ceiling_offset.y && cursor_pos.y < ceiling_size.y + ceiling_offset.y);
+
+	bIsCursorOverButton = (cursor_pos.x > button_pos.x && cursor_pos.x < button_size.x + button_pos.x
+						&& cursor_pos.y > button_pos.y && cursor_pos.y < button_size.y + button_pos.y);
+
 	if ((mouse_buttons & SDL_BUTTON_LMASK) != 0) {
 		// Left button down
-		if (!mouse_btn_left) {
-			// transition from button up to button down
-			window_pan_offset = window_offset;
-			cursor_pan_pos = cursor_pos;
-		}
+		if (bIsCursorInSky) {
+			if (!mouse_btn_left) {
+				// transition from button up to button down
+				window_pan_offset = window_offset;
+				cursor_pan_pos = cursor_pos;
+			}
 
-		window_offset = window_pan_offset + cursor_pos - cursor_pan_pos;
-		bStarsChanged = true;
-		mouse_btn_left = true;
+			window_offset = window_pan_offset + cursor_pos - cursor_pan_pos;
+			bStarsChanged = true;
+			mouse_btn_left = true;
+		}
 	}
 	else if ((mouse_buttons & SDL_BUTTON_LMASK) == 0) {
 
@@ -405,7 +444,7 @@ void readCSV(std::string filename, bool has_header) {
 
 		// move star into sky
 		if (star->GetMagnitude() < Star::MIN_MAGNITUDE) {
-			groupStarBySize(*star);
+			stars_by_magnitude.push_back(std::pair<int, float>( star->GetID(), star->GetMagnitude() ) );
 			universe.insert(std::pair<int, std::unique_ptr<Star>>( star->GetID(), std::move(star)) );
 		}
 	}
@@ -416,7 +455,7 @@ void readCSV(std::string filename, bool has_header) {
 
 	// sort by star magnitudes
 	std::cout << "Sorting stars by magnitude ... ";
-	sortStars();
+	std::sort(stars_by_magnitude.begin(), stars_by_magnitude.end(), sortStarsByMagnitude);
 	std::cout << "done.\n";
 
 }
