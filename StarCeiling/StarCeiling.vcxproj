@@ -157,6 +157,7 @@
   <ItemGroup>
     <ClCompile Include="graphics.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="Segment.cpp" />
     <ClCompile Include="Star.cpp" />
     <ClCompile Include="utilities.cpp" />
   </ItemGroup>
@@ -164,6 +165,7 @@
     <ClInclude Include="globals.h" />
     <ClInclude Include="graphics.h" />
     <ClInclude Include="main.h" />
+    <ClInclude Include="Segment.h" />
     <ClInclude Include="Star.h" />
     <ClInclude Include="types.h" />
     <ClInclude Include="utilities.h" />
