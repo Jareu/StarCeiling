@@ -151,10 +151,7 @@ int main() {
 		handleEvents();
 		handleUserInput();
 		update();
-		//if (bStarsChanged) {
 		render();
-		//	bStarsChanged = false;
-		//}
 	}
 
 	// frees memory associated with renderer and window
