@@ -5,7 +5,13 @@
 #include "globals.h"
 #include "utilities.h"
 
-Star::Star() {
+const float Star::MAX_MAGNITUDE = -2.0f;
+const float Star::MIN_MAGNITUDE = 10.0f;
+const float Star::DEFAULT_MAGNITUDE = Star::MIN_MAGNITUDE;
+const float Star::DEFAULT_B_V = 0.58f;
+
+Star::Star()
+{
 
 }
 
